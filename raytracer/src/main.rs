@@ -1,5 +1,3 @@
-extern crate rxmath;
-
 fn main() {
-    println!("Hello, world!");
+    println!("main raytracer");
 }

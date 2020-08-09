@@ -2,12 +2,12 @@ extern crate rxmath;
 use rxmath::*;
 
 struct Ray {
-    o : rxmath::Vec2,
-    d : Vec2,
+    o : Fvec3,
+    d : Fvec3,
 }
 
 impl Ray {
-    fn new(_o:Vec2, _d:Vec2) -> Ray {
+    fn new(_o:Fvec3, _d:Fvec3) -> Ray {
         Ray{ o:_o, d:_d }
     }
 }
@@ -17,6 +17,8 @@ impl Ray {
 // }
 
 fn main() {
-    let r : Ray = Ray::new(vec2(0,0), vec2(1,1));
-    println!("main raytracer{}", r.o.x);
+    let v0 = vec3(1_f32, 1_f32, 1_f32);
+    let v1 = v0.length();
+    let r : Ray = Ray::new(vec3(0_f32,0_f32,0_f32), vec3(1_f32,1_f32,1_f32));
+    println!("main raytracer {}", v1);
 }

@@ -18,7 +18,11 @@ impl Ray {
 
 fn main() {
     let v0 = vec3(1_f32, 1_f32, 1_f32);
-    let v1 = v0.length();
-    let r : Ray = Ray::new(vec3(0_f32,0_f32,0_f32), vec3(1_f32,1_f32,1_f32));
-    println!("main raytracer {}", v1);
+    let mut v1 = v0;
+    let v2 = v1 - v0;
+
+    let l0 = v0.length();
+    let l2 = v2.length();
+
+    println!("main raytracer {} {}", v0.length(), v2.length());
 }

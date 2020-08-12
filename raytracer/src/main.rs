@@ -2,8 +2,8 @@ extern crate rxmath;
 use rxmath::*;
 
 struct Ray {
-    o : Fvec3,
-    d : Fvec3,
+    pub o : Fvec3,
+    pub d : Fvec3,
 }
 
 impl Ray {
@@ -12,9 +12,9 @@ impl Ray {
     }
 }
 
-// pub struct Isect {
+pub struct Isect {
 
-// }
+}
 
 fn main() {
     let v0 = vec3(1_f32, 1_f32, 1_f32);
@@ -25,4 +25,5 @@ fn main() {
     let l2 = v2.length();
 
     println!("main raytracer {} {}", v0.length(), v2.length());
+    println!("print length {} {}", l0, l2);
 }

@@ -1,7 +1,3 @@
-#![crate_type="lib"]
-
-mod rxmath;
-
 extern crate num_traits;
 use std::ops;
 

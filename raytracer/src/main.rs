@@ -1,5 +1,4 @@
-extern crate rxmath;
-use rxmath::*;
+use rxmath::vector::*;
 
 struct Ray {
     pub o : Fvec3,

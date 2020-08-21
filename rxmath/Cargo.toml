@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 num-traits = "0.2.12"
+libc = "0.2.76"

@@ -23,5 +23,5 @@ fn main() {
     let m0 : Gmat2<f32> = Gmat2::new(1_f32, 1_f32, 1_f32, 1_f32);
 
     println!("{:?}", v0);
-    println!("{}", m0);
+    println!("{:?}", m0);
 }

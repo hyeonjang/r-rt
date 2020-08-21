@@ -21,7 +21,6 @@ pub trait MatOp<T>  {
     fn inverse(&self) ->Self;
     fn scale(&self, s:f32) -> Gmat2<T>;
 }
-
 impl MatOp<f32> for Gmat2<f32> {
     fn new(_00:f32, _01:f32, _10:f32, _11:f32 ) -> Gmat2<f32> {
         Gmat2{_00:_00, _01:_01, _10:_10, _11:_11}
@@ -46,4 +45,13 @@ impl MatOp<f32> for Gmat2<f32> {
 }
 
 pub type Fmat2 = Gmat2<f32>;
+pub type Umat2 = Gmat2<u32>;
+pub type Imat2 = Gmat2<i32>;
+pub type Fmat3 = Gmat3<f32>;
+pub type Umat3 = Gmat3<u32>;
+pub type Imat3 = Gmat3<i32>;
+pub type Fmat4 = Gmat4<f32>;
+pub type Umat4 = Gmat4<u32>;
+pub type Imat4 = Gmat4<i32>;
+
 impl_fmt!(Fmat2{ _00 _01 _10 _11 }, "|{} {}|\n|{} {}|");

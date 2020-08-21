@@ -11,7 +11,8 @@ pub struct Garr4<T>(pub T, pub T, pub T);
 pub struct Gvec2<T> { pub x:T, pub y:T }
 pub struct Gvec3<T> { pub x:T, pub y:T, pub z : T }
 pub struct Gvec4<T> { pub x:T, pub y:T, pub z : T, pub w:T }
-
+//////////////////////////////
+/// Operation trait functions
 // 0.1.0 Contructors & Copy & Clone
 impl<T> Gvec2<T> {
     pub fn new(_x:T, _y:T) -> Gvec2<T> {
@@ -92,7 +93,6 @@ impl<T: Copy+ops::Sub<Output=T>> ops::SubAssign for Gvec2<T> {
         *self = Self { x:self.x-other.x, y:self.y-other.y }
     }
 }
-
 // 1.2 Gvec3
 impl<T: ops::Add<Output= T>> ops::Add<Gvec3<T>> for Gvec3<T> {
     type Output = Gvec3<T>;
@@ -142,7 +142,26 @@ impl<T: ops::Neg<Output=T>> ops::Neg for Gvec4<T> {
         Gvec4{ x:-self.x, y:-self.y, z:-self.z, w:-self.w}
     }
 }
-// 2. Methods for Vectors
+
+// 2. Methods Trait for Vectors
+todo!();
+pub trait VecOp<T> {
+    fn norm2(self) -> f32;
+    fn norm(self) -> f32;
+    fn dot(self, other:T) ->f32;
+}
+impl VecOp<Gvec2<f32>> for Gvec2<f32> {
+    fn norm2(self) -> f32 {
+        self.x.mul_add(self.x, self.y.clone()* self.y)
+    }
+    fn norm(self) -> f32 {
+        self.norm2().sqrt()
+    }
+    fn dot(self,_v:Gvec2<f32>) -> f32 {
+        self.x.mul_add(_v.x, self.y * _v.y)/self.length()
+    }
+}
+
 // 2.1 Gvec2
 impl<Float: num_traits::Float+ops::Add<Output=Float>+ops::Mul<Output=Float>+ops::Div<Output=Float>> Gvec2<Float> {
     // norm/length/dot: floating-point only functions

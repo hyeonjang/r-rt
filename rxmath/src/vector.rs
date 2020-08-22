@@ -30,8 +30,6 @@ impl<T> Gvec4<T> {
         Gvec4{ x:_x, y:_y, z:_z, w:_w }
     }
 }
-
-
 // copy, clone features
 impl<T: Copy> Copy for Gvec2<T> {}
 impl<T: Clone> Clone for Gvec2<T>{ 
@@ -39,7 +37,6 @@ impl<T: Clone> Clone for Gvec2<T>{
             Gvec2 { x:self.x.clone(), y:self.y.clone() }
     }
 }   
-
 impl<T: Copy> Copy for Gvec3<T> {}
 impl<T: Clone> Clone for Gvec3<T>{ 
     fn clone(&self)->Self { 
@@ -52,7 +49,6 @@ impl<T: Clone> Clone for Gvec4<T>{
        Gvec4 { x:self.x.clone(), y:self.y.clone(), z:self.z.clone(), w:self.w.clone() }
     } 
 }
-
 //0.1.1 Function Contructors for Convenience
 pub fn vec2<T>(_x:T, _y:T) -> Gvec2<T> {
     Gvec2{ x:_x, y:_y }
@@ -63,7 +59,7 @@ pub fn vec3<T>(_x:T, _y:T, _z:T) -> Gvec3<T> {
 pub fn vec4<T>(_x:T, _y:T, _z:T, _w:T) -> Gvec4<T> {
     Gvec4{ x:_x, y:_y, z:_z, w:_w }
 }
-
+///////////////////////////
 // 1. Operator overloading
 // 1.1 Gvec2
 impl<T: ops::Add<Output= T>> ops::Add<Gvec2<T>> for Gvec2<T> {
@@ -99,7 +95,6 @@ impl<T: cmp::PartialEq> cmp::PartialEq for Gvec2<T> {
         (self.x==other.x)&&(self.y==other.y)
     }
 }
-
 // 1.2 Gvec3
 impl<T: ops::Add<Output= T>> ops::Add<Gvec3<T>> for Gvec3<T> {
     type Output = Gvec3<T>;
@@ -129,6 +124,11 @@ impl<T: Copy+ops::Sub<Output=T>> ops::SubAssign for Gvec3<T> {
         *self = Self { x:self.x-other.x, y:self.y-other.y, z:self.z-other.z }
     }
 }
+impl<T: cmp::PartialEq> cmp::PartialEq for Gvec3<T> {
+    fn eq(&self, other:&Self) -> bool {
+        (self.x==other.x)&&(self.y==other.y)&&(self.z==other.z)
+    }
+}
 // 1.3 Gvec4
 impl<T: ops::Add<Output= T>> ops::Add<Gvec4<T>> for Gvec4<T> {
     type Output = Gvec4<T>;
@@ -148,9 +148,12 @@ impl<T: ops::Neg<Output=T>> ops::Neg for Gvec4<T> {
         Gvec4{ x:-self.x, y:-self.y, z:-self.z, w:-self.w}
     }
 }
-
+impl<T: cmp::PartialEq> cmp::PartialEq for Gvec4<T> {
+    fn eq(&self, other:&Self) -> bool {
+        (self.x==other.x)&&(self.y==other.y)&&(self.z==other.z)&&(self.w==other.w)
+    }
+}
 // 2. Floating Point operation Methods Trait for Vectors
-todo!();
 pub trait VecOp<RHS=Self> {
     type Output;
     fn norm2(self) -> f32;

@@ -1,3 +1,4 @@
+use std::ops;
 //use crate::vector::*;
 pub struct Gmat2<T>{
     pub  _00 : T, pub _01 : T,
@@ -30,6 +31,12 @@ impl<T> Gmat4<T>{
         Gmat4{ _00:_00, _01:_01, _02:_02, _03:_03, _10:_10, _11:_11, _12:_12, _13:_13, _20:_20, _21:_21, _22:_22, _23:_23, _30:_30, _31:_31, _32:_32, _33:_33, }
     }
 }
+// Matrix Operator overloading for f32 //@@todo thinking about this
+// Gmat2
+// ops
+impl_cmp!(Gmat2<T>{ _00 _01 _10 _11});
+impl_cmp!(Gmat3<T>{ _00 _01 _02 _10 _11 _12 _20 _21 _22});
+impl_cmp!(Gmat4<T>{ _00 _01 _02 _03 _10 _11 _12 _13 _20 _21 _22 _23 _30 _31 _32 _33 });
 
 // Matrix Operation
 pub trait MatOp<T>  {

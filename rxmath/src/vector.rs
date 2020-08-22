@@ -62,6 +62,7 @@ pub fn vec4<T>(_x:T, _y:T, _z:T, _w:T) -> Gvec4<T> {
 ///////////////////////////
 // 1. Operator overloading
 // 1.1 Gvec2
+// ops
 impl<T: ops::Add<Output= T>> ops::Add<Gvec2<T>> for Gvec2<T> {
     type Output = Gvec2<T>;
     fn add(self, _rhs: Gvec2<T>) -> Gvec2<T> {
@@ -90,12 +91,11 @@ impl<T: Copy+ops::Sub<Output=T>> ops::SubAssign for Gvec2<T> {
         *self = Self { x:self.x-other.x, y:self.y-other.y }
     }
 }
-impl<T: cmp::PartialEq> cmp::PartialEq for Gvec2<T> {
-    fn eq(&self, other:&Self) -> bool {
-        (self.x==other.x)&&(self.y==other.y)
-    }
-}
+// cmp
+impl_cmp!(Gvec2<T>{ x y });
+
 // 1.2 Gvec3
+// ops
 impl<T: ops::Add<Output= T>> ops::Add<Gvec3<T>> for Gvec3<T> {
     type Output = Gvec3<T>;
     fn add(self, _rhs: Gvec3<T>) -> Gvec3<T> {
@@ -124,12 +124,14 @@ impl<T: Copy+ops::Sub<Output=T>> ops::SubAssign for Gvec3<T> {
         *self = Self { x:self.x-other.x, y:self.y-other.y, z:self.z-other.z }
     }
 }
+// cmp
 impl<T: cmp::PartialEq> cmp::PartialEq for Gvec3<T> {
     fn eq(&self, other:&Self) -> bool {
         (self.x==other.x)&&(self.y==other.y)&&(self.z==other.z)
     }
 }
 // 1.3 Gvec4
+// ops
 impl<T: ops::Add<Output= T>> ops::Add<Gvec4<T>> for Gvec4<T> {
     type Output = Gvec4<T>;
     fn add(self, _rhs: Gvec4<T>) -> Gvec4<T> {
@@ -148,9 +150,10 @@ impl<T: ops::Neg<Output=T>> ops::Neg for Gvec4<T> {
         Gvec4{ x:-self.x, y:-self.y, z:-self.z, w:-self.w}
     }
 }
+// cmp
 impl<T: cmp::PartialEq> cmp::PartialEq for Gvec4<T> {
     fn eq(&self, other:&Self) -> bool {
-        (self.x==other.x)&&(self.y==other.y)&&(self.z==other.z)&&(self.w==other.w)
+        (&self.x==&other.x)&&(&self.y==&other.y)&&(&self.z==&other.z)&&(&self.w==&other.w)
     }
 }
 // 2. Floating Point operation Methods Trait for Vectors

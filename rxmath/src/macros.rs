@@ -16,6 +16,17 @@ macro_rules! impl_fmt {
         }
     };
 }
+#[macro_export]
+macro_rules! impl_cmp {
+    ($type:ty{ $first:ident $($others:ident)+}) => {
+        impl<T: std::cmp::PartialEq> std::cmp::PartialEq for $type {
+            fn eq(&self, other:&Self) -> bool {
+                (&self.$first==&other.$first)$(&&(&self.$others==&other.$others))+
+            }
+        }
+    };
+}
+
 
 //@@todo implement convienient sturcture contructors
 // vec mat 

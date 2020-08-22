@@ -57,29 +57,47 @@ impl_cmp!(Gmat4<T>{ _00 _01 _02 _03 _10 _11 _12 _13 _20 _21 _22 _23 _30 _31 _32 
 pub trait MatOp<T>  {
     fn ident() -> Self;
     fn det(&self) -> f32; 
-    fn inverse(&self) ->Self;
-    fn scale(&self, s:f32) -> Gmat2<T>;
+    fn inverse(self) ->Self;
+    //fn scale(self, s:f32) -> Gmat2<T>; // todo change 
 }
 // 2.1.1 Gmat2 
 impl MatOp<f32> for Gmat2<f32> {
     fn ident() -> Gmat2<f32> {
-        Gmat2{ _00:1_f32, _01:0_f32, _10:1_f32, _11:0_f32}
+        Gmat2::new(1_f32, 0_f32, 1_f32, 0_f32)
     }
-    fn det(&self) -> f32{ return self._00*self._11 - self._01*self._10; }
-    fn inverse(&self) -> Self {
+    fn det(&self) -> f32{ self._00*self._11 - self._01*self._10 }
+    fn inverse(self) -> Self {
         let div = 1_f32/self.det();
-        Gmat2{
-            _00:self._11*div, _01:self._10*div,
-            _10:self._01*div, _11:self._00*div,
-        }
-    }
-    fn scale(&self, s:f32) -> Self{
-        Gmat2{
-            _00:self._00*s, _01:self._01,
-            _10:self._10,   _11:self._11*s,
-        }
+        self*div
     }
 }
+// 2.1.1 Gmat3 
+impl MatOp<f32> for Gmat3<f32> {
+    fn ident() -> Gmat3<f32> {
+        Gmat3::new(1_f32, 0_f32, 0_f32,
+        /*2nd row*/0_f32, 1_f32, 0_f32,
+        /*3rd row*/0_f32, 0_f32, 1_f32)
+    }
+    fn det(&self) -> f32{ self._00*self._11*self._22 - self._02*self._11*self._20 }
+    fn inverse(self) -> Self {
+        let div = 1_f32/self.det();
+        self*div
+    }
+}// 2.1.1 Gmat4 
+impl MatOp<f32> for Gmat4<f32> {
+    fn ident() -> Gmat4<f32> {
+        Gmat4::new(1_f32, 0_f32, 0_f32, 0_f32,
+        /*2nd row*/0_f32, 1_f32, 0_f32, 0_f32,
+        /*3nd row*/0_f32, 0_f32, 1_f32, 0_f32,
+        /*4th row*/0_f32, 0_f32, 0_f32, 1_f32)
+    }
+    fn det(&self) -> f32{ self._00*self._11*self._22*self._33 - self._03*self._12*self._21*self._30 }
+    fn inverse(self) -> Self {
+        let div = 1_f32/self.det();
+        self*div
+    }
+}
+
 //////////////////////////////
 // 3. Final type aliasing?? <<aliasing is right expression?>>
 pub type Fmat2 = Gmat2<f32>;

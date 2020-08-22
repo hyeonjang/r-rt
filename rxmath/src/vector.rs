@@ -1,5 +1,5 @@
 extern crate libc;
-///////////////////////////////
+//////////////////////////////
 /// 0. tupled array sturctures 
 pub struct Garr2<T>(pub T, pub T);
 pub struct Garr3<T>(pub T, pub T, pub T);
@@ -42,7 +42,7 @@ impl_cpy!(Gvec2<T>{ x y });
 impl_cpy!(Gvec3<T>{ x y z });
 impl_cpy!(Gvec4<T>{ x y z w });
 
-///////////////////////////
+//////////////////////////////
 // 1. Operator overloading
 // 1.1. ops
 impl_ops!(Gvec2<T>{ x y });
@@ -53,7 +53,7 @@ impl_cmp!(Gvec2<T>{ x y });
 impl_cmp!(Gvec3<T>{ x y z });
 impl_cmp!(Gvec4<T>{ x y z w });
 
-////////////////////////////
+//////////////////////////////
 /// 2. Vector features
 // 2.1 Floating Point operation Methods Trait for Vectors
 pub trait VecOp<RHS=Self> {
@@ -124,7 +124,7 @@ impl VecOp<Gvec4<f32>> for Gvec4<f32> {
     }
 }
 
-/////////////////////////////////////
+//////////////////////////////
 // 3. Final type aliasing?? <<aliasing is right expression?>>
 pub type Fvec2 = Gvec2<f32>;
 pub type Ivec2 = Gvec2<i32>;
@@ -135,8 +135,10 @@ pub type Uvec3 = Gvec3<u32>;
 pub type Fvec4 = Gvec4<f32>;
 pub type Ivec4 = Gvec4<i32>;
 pub type Uvec4 = Gvec4<u32>;
-// exactly todo = array to vector copy
 
+// exactly todo = array to vector copy
+//////////////////////////////
+// 4. Rust Display, Debug Printing Functions
 impl_fmt!(Fvec2{ x y }, "<{} {}>");
 impl_fmt!(Ivec2{ x y }, "<{} {}>");
 impl_fmt!(Uvec2{ x y }, "<{} {}>");

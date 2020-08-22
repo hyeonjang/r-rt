@@ -93,7 +93,7 @@ pub type Umat4 = Gmat4<u32>;
 pub type Imat4 = Gmat4<i32>;
 
 //////////////////////////////
-// 3. Rust Display, Debug Printing Functions
+// 4. Rust Display, Debug Printing Functions
 impl_fmt!(Fmat2{ _00 _01 _10 _11 }, "|{} {}|\n|{} {}|");
 impl_fmt!(Umat2{ _00 _01 _10 _11 }, "|{} {}|\n|{} {}|");
 impl_fmt!(Imat2{ _00 _01 _10 _11 }, "|{} {}|\n|{} {}|");

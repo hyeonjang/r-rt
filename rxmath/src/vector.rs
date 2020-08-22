@@ -1,5 +1,6 @@
 extern crate libc;
 use std::ops;
+use std::cmp;
 ///////////////////////////////
 /// 0. tupled array sturctures 
 pub struct Garr2<T>(pub T, pub T);
@@ -93,6 +94,12 @@ impl<T: Copy+ops::Sub<Output=T>> ops::SubAssign for Gvec2<T> {
         *self = Self { x:self.x-other.x, y:self.y-other.y }
     }
 }
+impl<T: cmp::PartialEq> cmp::PartialEq for Gvec2<T> {
+    fn eq(&self, other:&Self) -> bool {
+        (self.x==other.x)&&(self.y==other.y)
+    }
+}
+
 // 1.2 Gvec3
 impl<T: ops::Add<Output= T>> ops::Add<Gvec3<T>> for Gvec3<T> {
     type Output = Gvec3<T>;
@@ -122,7 +129,6 @@ impl<T: Copy+ops::Sub<Output=T>> ops::SubAssign for Gvec3<T> {
         *self = Self { x:self.x-other.x, y:self.y-other.y, z:self.z-other.z }
     }
 }
-
 // 1.3 Gvec4
 impl<T: ops::Add<Output= T>> ops::Add<Gvec4<T>> for Gvec4<T> {
     type Output = Gvec4<T>;
@@ -143,83 +149,75 @@ impl<T: ops::Neg<Output=T>> ops::Neg for Gvec4<T> {
     }
 }
 
-// 2. Methods Trait for Vectors
+// 2. Floating Point operation Methods Trait for Vectors
 todo!();
-pub trait VecOp<T> {
+pub trait VecOp<RHS=Self> {
+    type Output;
     fn norm2(self) -> f32;
     fn norm(self) -> f32;
-    fn dot(self, other:T) ->f32;
+    fn length2(self) -> f32;
+    fn length(self) -> f32;
+    fn dot(self, rhs:RHS) ->f32;
 }
-impl VecOp<Gvec2<f32>> for Gvec2<f32> {
-    fn norm2(self) -> f32 {
-        self.x.mul_add(self.x, self.y.clone()* self.y)
-    }
-    fn norm(self) -> f32 {
-        self.norm2().sqrt()
-    }
-    fn dot(self,_v:Gvec2<f32>) -> f32 {
-        self.x.mul_add(_v.x, self.y * _v.y)/self.length()
-    }
-}
-
 // 2.1 Gvec2
-impl<Float: num_traits::Float+ops::Add<Output=Float>+ops::Mul<Output=Float>+ops::Div<Output=Float>> Gvec2<Float> {
-    // norm/length/dot: floating-point only functions
-    pub fn norm2(self) -> Float {
+impl VecOp<Gvec2<f32>> for Gvec2<f32> {
+    type Output = f32;
+    #[inline] fn norm2(self) -> f32 {
         self.x.mul_add(self.x, self.y.clone()* self.y)
     }
-    pub fn norm(self) -> Float {
+    #[inline] fn norm(self) -> f32 {
         self.norm2().sqrt()
     }
-    pub fn length2(&self) -> Float {
+    #[inline] fn length2(self) -> f32 {
         self.x.mul_add(self.x, self.y.clone()* self.y)
     }
-    pub fn length(&self) -> Float {
+    #[inline] fn length(self) -> f32 {
         self.length2().sqrt()
     }
-    pub fn dot(self,_v:Gvec2<Float>) -> Float {
+    #[inline] fn dot(self,_v:Gvec2<f32>) -> f32 {
         self.x.mul_add(_v.x, self.y * _v.y)/self.length()
     }
 }
 //2.2 Gvec3
-impl<Float: num_traits::Float + std::clone::Clone+ops::Add<Output=Float>+ops::Mul<Output=Float>+ops::Div<Output=Float>> Gvec3<Float> {
-    // norm/length/dot: floating-point only functions
-    pub fn norm2(self) -> Float {
+impl VecOp<Gvec3<f32>> for Gvec3<f32> {
+    type Output = f32;
+
+    #[inline] fn norm2(self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.clone()*self.z))
     }
-    pub fn norm(self) -> Float {
+    #[inline] fn norm(self) -> f32 {
         self.norm2().sqrt()
     }
-    pub fn length2(&self) -> Float {
+    #[inline] fn length2(self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.clone()*self.z))
     }
-    pub fn length(&self) -> Float {
+    #[inline] fn length(self) -> f32 {
         self.length2().sqrt()
     }
-    pub fn dot(self,_v:Gvec3<Float>) -> Float {
+    #[inline] fn dot(self,_v:Gvec3<f32>) -> f32 {
         self.x.mul_add(_v.x, self.y.mul_add(_v.y, _v.z*self.z))/self.length()
     }
 }
 //2.2 Gvec4
-impl<Float: num_traits::Float + std::clone::Clone+ops::Add<Output=Float>+ops::Mul<Output=Float>+ops::Div<Output=Float>> Gvec4<Float> {
-    // norm/length/dot: floating-point only functions
-    pub fn norm2(self) -> Float {
+impl VecOp<Gvec4<f32>> for Gvec4<f32> {
+    type Output = f32;
+
+    #[inline] fn norm2(self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.mul_add(self.z, self.w.clone()*self.z)))
     }
-    pub fn norm(self) -> Float {
+    #[inline] fn norm(self) -> f32 {
         self.norm2().sqrt()
     }
-    pub fn length2(&self) -> Float {
+    #[inline] fn length2(self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.mul_add(self.z, self.w.clone()*self.z)))
     }
-    pub fn length(&self) -> Float {
+    #[inline] fn length(self) -> f32 {
         self.length2().sqrt()
     }
-    pub fn dot(self,_v:Gvec4<Float>) -> Float {
+    #[inline] fn dot(self,_v:Gvec4<f32>) -> f32 {
         self.x.mul_add(_v.x, self.y.mul_add(self.y, _v.z.mul_add(self.z, _v.w*self.z)))/self.length()
     }
 }
-
 // exactly todo = array to vector copy
 pub type Fvec2 = Gvec2<f32>;
 pub type Ivec2 = Gvec2<i32>;

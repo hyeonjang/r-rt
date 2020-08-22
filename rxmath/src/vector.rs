@@ -1,6 +1,5 @@
 extern crate libc;
 use std::ops;
-use std::cmp;
 ///////////////////////////////
 /// 0. tupled array sturctures 
 pub struct Garr2<T>(pub T, pub T);
@@ -91,9 +90,6 @@ impl<T: Copy+ops::Sub<Output=T>> ops::SubAssign for Gvec2<T> {
         *self = Self { x:self.x-other.x, y:self.y-other.y }
     }
 }
-// cmp
-impl_cmp!(Gvec2<T>{ x y });
-
 // 1.2 Gvec3
 // ops
 impl<T: ops::Add<Output= T>> ops::Add<Gvec3<T>> for Gvec3<T> {
@@ -124,12 +120,6 @@ impl<T: Copy+ops::Sub<Output=T>> ops::SubAssign for Gvec3<T> {
         *self = Self { x:self.x-other.x, y:self.y-other.y, z:self.z-other.z }
     }
 }
-// cmp
-impl<T: cmp::PartialEq> cmp::PartialEq for Gvec3<T> {
-    fn eq(&self, other:&Self) -> bool {
-        (self.x==other.x)&&(self.y==other.y)&&(self.z==other.z)
-    }
-}
 // 1.3 Gvec4
 // ops
 impl<T: ops::Add<Output= T>> ops::Add<Gvec4<T>> for Gvec4<T> {
@@ -151,11 +141,10 @@ impl<T: ops::Neg<Output=T>> ops::Neg for Gvec4<T> {
     }
 }
 // cmp
-impl<T: cmp::PartialEq> cmp::PartialEq for Gvec4<T> {
-    fn eq(&self, other:&Self) -> bool {
-        (&self.x==&other.x)&&(&self.y==&other.y)&&(&self.z==&other.z)&&(&self.w==&other.w)
-    }
-}
+impl_cmp!(Gvec2<T>{ x y });
+impl_cmp!(Gvec3<T>{ x y z });
+impl_cmp!(Gvec4<T>{ x y z w });
+
 // 2. Floating Point operation Methods Trait for Vectors
 pub trait VecOp<RHS=Self> {
     type Output;

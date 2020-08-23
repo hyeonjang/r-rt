@@ -1,3 +1,19 @@
+//*********************************************************
+// Copyright 2020-2020 Hyeonjang An
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//*********************************************************
+
 extern crate libc;
 //////////////////////////////
 /// 0. tupled array sturctures 
@@ -58,69 +74,79 @@ impl_cmp!(Gvec4<T>{ x y z w });
 // 2.1 Floating Point operation Methods Trait for Vectors
 pub trait VecOp<RHS=Self> {
     type Output;
-    fn norm2(self) -> f32;
-    fn norm(self) -> f32;
-    fn length2(self) -> f32;
-    fn length(self) -> f32;
+    fn norm2(&self) -> f32;
+    fn norm(&self) -> f32;
+    fn length2(&self) -> f32;
+    fn length(&self) -> f32;
     fn dot(self, rhs:RHS) ->f32;
+    fn normalize(self) -> Self;
 }
 // 2.1.1 Gvec2
 impl VecOp<Gvec2<f32>> for Gvec2<f32> {
     type Output = f32;
-    #[inline] fn norm2(self) -> f32 {
+    #[inline] fn norm2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.clone()* self.y)
     }
-    #[inline] fn norm(self) -> f32 {
+    #[inline] fn norm(&self) -> f32 {
         self.norm2().sqrt()
     }
-    #[inline] fn length2(self) -> f32 {
+    #[inline] fn length2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.clone()* self.y)
     }
-    #[inline] fn length(self) -> f32 {
+    #[inline] fn length(&self) -> f32 {
         self.length2().sqrt()
     }
     #[inline] fn dot(self,_v:Gvec2<f32>) -> f32 {
         self.x.mul_add(_v.x, self.y * _v.y)/self.length()
+    }
+    #[inline] fn normalize(self) -> Self {
+        self/self.length()
     }
 }
 // 2.1.2 Gvec3
 impl VecOp<Gvec3<f32>> for Gvec3<f32> {
     type Output = f32;
 
-    #[inline] fn norm2(self) -> f32 {
+    #[inline] fn norm2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.clone()*self.z))
     }
-    #[inline] fn norm(self) -> f32 {
+    #[inline] fn norm(&self) -> f32 {
         self.norm2().sqrt()
     }
-    #[inline] fn length2(self) -> f32 {
+    #[inline] fn length2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.clone()*self.z))
     }
-    #[inline] fn length(self) -> f32 {
+    #[inline] fn length(&self) -> f32 {
         self.length2().sqrt()
     }
     #[inline] fn dot(self,_v:Gvec3<f32>) -> f32 {
         self.x.mul_add(_v.x, self.y.mul_add(_v.y, _v.z*self.z))/self.length()
+    }
+    #[inline] fn normalize(self) -> Self {
+        self/self.length()
     }
 }
 // 2.1.3 Gvec4
 impl VecOp<Gvec4<f32>> for Gvec4<f32> {
     type Output = f32;
 
-    #[inline] fn norm2(self) -> f32 {
+    #[inline] fn norm2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.mul_add(self.z, self.w.clone()*self.z)))
     }
-    #[inline] fn norm(self) -> f32 {
+    #[inline] fn norm(&self) -> f32 {
         self.norm2().sqrt()
     }
-    #[inline] fn length2(self) -> f32 {
+    #[inline] fn length2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.mul_add(self.z, self.w.clone()*self.z)))
     }
-    #[inline] fn length(self) -> f32 {
+    #[inline] fn length(&self) -> f32 {
         self.length2().sqrt()
     }
     #[inline] fn dot(self,_v:Gvec4<f32>) -> f32 {
         self.x.mul_add(_v.x, self.y.mul_add(self.y, _v.z.mul_add(self.z, _v.w*self.z)))/self.length()
+    }
+    #[inline] fn normalize(self) -> Self {
+        self/self.length()
     }
 }
 

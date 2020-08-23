@@ -1,5 +1,5 @@
- // Copyright 2013-2014 The CGMath Developers. For a full listing of the authors,
-// refer to the Cargo.toml file at the top-level directory of this distribution.
+//*********************************************************
+// Copyright 2020-2020 Hyeonjang An
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+//*********************************************************
 #![crate_type="lib"]
 
 #[macro_use]
@@ -47,6 +47,11 @@ mod tests {
         let mut v4 = vec2(1_f32, 1_f32);
         v4 *= 4_f32;
         assert_eq!(v4, vec2(4_f32, 4_f32));
+
+        // 0.3 vector functions tests
+        let v5 = vec2(3_f32, 4_f32);
+        let length_v5 = v5.length();
+        assert_eq!(length_v5, 5_f32);
 
         // 1. matrix tests
         // 1.0 matrix construction test

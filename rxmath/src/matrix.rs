@@ -1,3 +1,19 @@
+//*********************************************************
+// Copyright 2020-2020 Hyeonjang An
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//*********************************************************
+
 //use crate::vector::*;
 /////////////////////////
 /// 0. Matrix Sturctures
@@ -58,17 +74,21 @@ pub trait MatOp<T>  {
     fn ident() -> Self;
     fn det(&self) -> f32; 
     fn inverse(self) ->Self;
+    fn transpose(self) -> Self;
     //fn scale(self, s:f32) -> Gmat2<T>; // todo change 
 }
 // 2.1.1 Gmat2 
 impl MatOp<f32> for Gmat2<f32> {
-    fn ident() -> Gmat2<f32> {
+    fn ident() -> Self {
         Gmat2::new(1_f32, 0_f32, 1_f32, 0_f32)
     }
     fn det(&self) -> f32{ self._00*self._11 - self._01*self._10 }
     fn inverse(self) -> Self {
         let div = 1_f32/self.det();
         self*div
+    }
+    fn transpose(self) -> Self {
+        Gmat2::new(self._00, self._10, self._01, self._11)
     }
 }
 // 2.1.1 Gmat3 
@@ -83,6 +103,11 @@ impl MatOp<f32> for Gmat3<f32> {
         let div = 1_f32/self.det();
         self*div
     }
+    fn transpose(self) -> Self {
+        Gmat3::new(self._00, self._10, self._20, 
+        /*2nd row*/self._01, self._11, self._21, 
+        /*3nd row*/self._02, self._12, self._22,)
+    }
 }// 2.1.1 Gmat4 
 impl MatOp<f32> for Gmat4<f32> {
     fn ident() -> Gmat4<f32> {
@@ -95,6 +120,18 @@ impl MatOp<f32> for Gmat4<f32> {
     fn inverse(self) -> Self {
         let div = 1_f32/self.det();
         self*div
+    }
+    fn transpose(self) -> Self {
+        Gmat4::new(self._00, self._10, self._20, self._30, 
+        /*2nd row*/self._01, self._11, self._21, self._31, 
+        /*3nd row*/self._02, self._12, self._22, self._23,
+        /*4th row*/self._03, self._13, self._23, self._33,)
+    }
+}
+// 4x4 matrix functions
+impl Gmat4<f32> {
+    pub fn perspective() -> Self {
+        Gmat4::ident()
     }
 }
 

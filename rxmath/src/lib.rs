@@ -30,7 +30,7 @@ mod tests {
 
     #[test]
     fn it_works() {
-        
+
         // 0. vector tests
         // 0.0 vector contruction test
         let v0:Fvec2 = vector::Gvec2::new(1_f32, 1_f32);
@@ -48,6 +48,12 @@ mod tests {
         v4 *= 4_f32;
         assert_eq!(v4, vec2(4_f32, 4_f32));
 
+        // 0.2.1 vector cross product test
+        let v_c0 = vec3(1_f32, 1_f32, 1_f32);
+        let v_c1 = vec3(1_f32, 1_f32, 1_f32);
+        let v_r = v_c0*v_c1; 
+        assert_eq!(v_r, vec3(0_f32, 0_f32, 0_f32));
+
         // 0.3 vector functions tests
         let v5 = vec2(3_f32, 4_f32);
         let length_v5 = v5.length();
@@ -55,7 +61,7 @@ mod tests {
 
         // 1. matrix tests
         // 1.0 matrix construction test
-        let m0 = Gmat2::new(1_f32, 0_f32, 1_f32, 0_f32);
+        let m0 = Gmat2::new(1_f32, 0_f32, 0_f32, 1_f32);
         let m1 = Gmat2::ident();
         assert_eq!(m0, m1);
 
@@ -69,5 +75,20 @@ mod tests {
         let mut m4 = Gmat2::ident();
         m4 *= 4_f32;
         assert_eq!(m4, Gmat2::ident()*4_f32);
+
+        // 0.3 vector vs matrix operations
+        let m5 = Gmat2::ident();
+        let v6 = vec2(2f32, 2f32);
+        let r0 : Fmat2 = m5 * v6; // left matrix, right vector
+        let r1 : Fvec2 = v6 * m5; // left vector, right matrix
+
+        assert_eq!(r0, Gmat2::ident()*2f32);
+        assert_eq!(r1, v6);
+
+        // 0.4 matrix functions operations
+        let m6 = Gmat3::ident();
+        let m8 = Gmat3::ident();
+        let m7 = m6.transpose();
+        assert_eq!(m8, m7);
     }
 }

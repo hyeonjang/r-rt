@@ -60,14 +60,21 @@ impl_cpy!(Gvec4<T>{ x y z w });
 
 //////////////////////////////
 // 1. Operator overloading
-// 1.1. ops
-impl_ops!(Gvec2<T>{ x y });
-impl_ops!(Gvec3<T>{ x y z });
-impl_ops!(Gvec4<T>{ x y z w });
-// 1.2 cmp
+// 1.1 cmp
 impl_cmp!(Gvec2<T>{ x y });
 impl_cmp!(Gvec3<T>{ x y z });
 impl_cmp!(Gvec4<T>{ x y z w });
+// 1.2. ops
+impl_ops!(Gvec2<T>{ x y });
+impl_ops!(Gvec4<T>{ x y z w });
+// 1.2.1 cross product of Vector3 
+impl<T: Copy+std::ops::Mul<Output=T>+std::ops::Sub<Output=T>> std::ops::Mul<Gvec3<T>> for Gvec3<T>{
+    type Output = Gvec3<T>;
+    fn mul(self, rhs:Gvec3<T>) -> Self {
+        Gvec3::new( self.y*rhs.z-self.z*rhs.y, self.z*rhs.x-self.x*rhs.z, self.x*rhs.y-self.y*rhs.x )
+     }
+} 
+impl_ops!(Gvec3<T>{ x y z });
 
 //////////////////////////////
 /// 2. Vector features

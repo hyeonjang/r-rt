@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 rxmath = { path = "../rxmath" }
+image = "0.23.8"
+num-complex = "0.3.0"

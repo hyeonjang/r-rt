@@ -19,9 +19,26 @@ pub struct Isect {
 }
 
 fn main() {
-    let v0 = vec3(1_f32, 1_f32, 1_f32);
-    let m0 : Gmat2<f32> = Gmat2::new(1_f32, 1_f32, 1_f32, 1_f32);
 
-    println!("{:?}", v0);
-    println!("{:?}", m0);
+    // Image
+    const IMAGE_WIDTH : u32 = 256;
+    const IMAGE_HEIGHT : u32 = 256;
+
+
+    println!("{}x{}", IMAGE_HEIGHT, IMAGE_WIDTH);
+
+    // Render
+    for i in 0..IMAGE_HEIGHT {
+        for j in 0..IMAGE_WIDTH {
+            let r  = (i as f32)/((IMAGE_WIDTH-1) as f32);
+            let g  = (j as f32)/((IMAGE_HEIGHT-1) as f32); 
+            let b  = 0.25; 
+
+            let ir : u32 = (255.999*r) as u32;
+            let ig : u32 = (255.999*g) as u32;
+            let ib : u32 = (255.999*b) as u32;
+
+            println!("{} {} {}", ir, ig, ib);
+        }
+    }
 }

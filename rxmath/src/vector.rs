@@ -182,3 +182,7 @@ impl_fmt!(Fvec4{ x y z w }, "<{} {} {} {}>");
 impl_fmt!(Ivec4{ x y z w }, "<{} {} {} {}>");
 impl_fmt!(Uvec4{ x y z w }, "<{} {} {} {}>");
 
+//@@todo pub function to calculate ~~~~
+pub fn dot( v0:Fvec3, v1:Fvec3 ) -> f32 {
+    v0.dot(v1)
+}

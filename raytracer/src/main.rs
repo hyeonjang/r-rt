@@ -11,7 +11,12 @@ use rxmath::vector::*;
 pub fn ray_color(r:Ray) -> Fvec3 {
     let o = vec3(0f32, 0f32, -1f32);
     let s : Sphere = Sphere{ center:o, radius:0.5 };
-    if s.intersect(&r){ return vec3(1.0, 0.0, 0.0); }
+    let mut i : Iact = Iact{ t:1_f32, pos:o, norm:o };
+    
+    if s.intersect(&r, &mut i) { 
+        return vec3(i.norm.x+1f32, i.norm.y+1f32, i.norm.z+1f32)*0.5; 
+    }
+    
     // if t>0f32 {
     //     let N = r.at(t).normalize() - vec3(0f32, 0f32, -1f32);
     //     return vec3(N.x+1f32, N.y+1f32, N.z+1f32)*0.5;

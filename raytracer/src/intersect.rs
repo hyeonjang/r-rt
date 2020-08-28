@@ -13,10 +13,10 @@ impl Ray {
     } 
 }
 
-struct Intersect {
+pub struct Iact {
+    pub t : f32,
     pub pos : Fvec3,
     pub norm : Fvec3,
-
 }
 
 #[allow(dead_code)]

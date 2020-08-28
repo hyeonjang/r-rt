@@ -169,6 +169,18 @@ pub type Fvec4 = Gvec4<f32>;
 pub type Ivec4 = Gvec4<i32>;
 pub type Uvec4 = Gvec4<u32>;
 
+//////////////////////////////
+/// ** considering point type
+pub type Fpoint2 = Gvec2<f32>;
+pub type Ipoint2 = Gvec2<i32>;
+pub type Upoint2 = Gvec2<u32>;
+pub type Fpoint3 = Gvec3<f32>;
+pub type Ipoint3 = Gvec3<i32>;
+pub type Upoint3 = Gvec3<u32>;
+pub type Fpoint4 = Gvec4<f32>;
+pub type Ipoint4 = Gvec4<i32>;
+pub type Upoint4 = Gvec4<u32>;
+
 // exactly todo = array to vector copy
 //////////////////////////////
 // 4. Rust Display, Debug Printing Functions

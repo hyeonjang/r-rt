@@ -67,7 +67,7 @@ macro_rules!  impl_ops {
         // 0.  scalar vs type
         // 0.0 scalar vs type operations
         impl<T: Copy + std::ops::Mul<Output=T>> std::ops::Mul<T> for $type {
-            type Output = $type;
+            type Output = Self;
             fn mul(self, rhs:T) -> $type {
                 <$type>::new($(self.$field*rhs,)+)
             }
@@ -123,9 +123,6 @@ macro_rules!  impl_ops {
         }
     };
 }
-
-
-
 
 
 

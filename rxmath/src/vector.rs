@@ -43,6 +43,21 @@ impl<T> Gvec4<T> {
         Gvec4{ x:_x, y:_y, z:_z, w:_w }
     }
 }
+impl<T: Default> Default for Gvec2<T> {
+    #[inline] fn default() -> Self {
+        Gvec2{ x:T::default(), y:T::default() }
+    }
+}
+impl<T: Default> Default for Gvec3<T> {
+    #[inline] fn default() -> Self {
+        Gvec3{ x:T::default(), y:T::default(), z:T::default() }
+    }
+}
+impl<T: Default> Default for Gvec4<T> {
+    #[inline] fn default() -> Self {
+        Gvec4{ x:T::default(), y:T::default(), z:T::default(), w:T::default() }
+    }
+}
 // 0.1.1 Function Contructors for Convenience
 pub fn vec2<T>(_x:T, _y:T) -> Gvec2<T> {
     Gvec2{ x:_x, y:_y }
@@ -69,7 +84,7 @@ impl_ops!(Gvec2<T>{ x y });
 impl_ops!(Gvec4<T>{ x y z w });
 // 1.2.1 cross product of Vector3 
 impl<T: Copy+std::ops::Mul<Output=T>+std::ops::Sub<Output=T>> std::ops::Mul<Gvec3<T>> for Gvec3<T>{
-    type Output = Gvec3<T>;
+    type Output = Self;
     fn mul(self, rhs:Gvec3<T>) -> Self {
         Gvec3::new( self.y*rhs.z-self.z*rhs.y, self.z*rhs.x-self.x*rhs.z, self.x*rhs.y-self.y*rhs.x )
      }
@@ -196,13 +211,12 @@ impl_fmt!(Uvec4{ x y z w }, "<{} {} {} {}>");
 
 //@@todo pub function to calculate ~~~~
 
-
-pub fn dot( v0:Fvec3, v1:Fvec3 ) -> f32 {
+#[inline] pub fn dot( v0:Fvec3, v1:Fvec3 ) -> f32 {
     v0.dot(v1)
 }
-pub fn normalize( v:Fvec3 ) -> Fvec3 {
+#[inline] pub fn normalize( v:Fvec3 ) -> Fvec3 {
     v.normalize()
 }
-pub fn sqrt(f:f32) -> f32 {
+#[inline] pub fn sqrt(f:f32) -> f32 {
     f.sqrt()
 } 

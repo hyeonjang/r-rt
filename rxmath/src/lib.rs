@@ -15,6 +15,26 @@
 //*********************************************************
 #![crate_type="lib"]
 
+////////////////////////////////////
+/// 0. const variable macro funtions
+#[macro_export] macro_rules! INFI {
+    ($t:ident) => {
+        std::$t::INFINITY
+    };
+}
+#[macro_export] macro_rules! PI {
+    ($t:ident   ) => { std::$t::consts::PI };
+    ($t:ident, 2) => { std::$t::consts::FRAC_PI_2 };
+    ($t:ident, 3) => { std::$t::consts::FRAC_PI_3 };
+    ($t:ident, 4) => { std::$t::consts::FRAC_PI_4 };
+    ($t:ident, 6) => { std::$t::consts::FRAC_PI_6 };
+    ($t:ident, 8) => { std::$t::consts::FRAC_PI_8 };
+}
+
+#[inline] pub fn degrees_to_radians(degrees:f32) {
+    degrees * PI!(f32) / 180.0;
+}
+
 #[macro_use]
 pub mod macros;
 pub mod vector;
@@ -30,6 +50,10 @@ mod tests {
 
     #[test]
     fn it_works() {
+
+        // const variable test
+        let pi = PI!(f32, 2);
+        assert_eq!(pi, 3.14);
 
         // 0. vector tests
         // 0.0 vector contruction test

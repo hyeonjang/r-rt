@@ -1,11 +1,11 @@
 use rxmath::vector::*;
-use rxmath::matrix::*;
+//use rxmath::matrix::*;
 /////////////////////////
 use crate::intersect::*;
 /////////////////////////
 /// 
 pub trait Shape {
-    fn intersect( &self, r:&Ray, i:&mut Iact ) -> bool;
+    fn intersect( &self, r:&Ray, t_min:f32, t_max:f32, i:&mut hit ) -> bool;
 }
 
 pub struct ShapeList<T: Shape>{
@@ -13,26 +13,39 @@ pub struct ShapeList<T: Shape>{
 }
 
 pub struct Sphere {
-    pub center : Fpoint3,
+    pub center : vec3,
     pub radius : f32,
 }
 
 impl Shape for Sphere {
-    fn intersect( &self, r:&Ray, i:&mut Iact ) -> bool {
+    fn intersect( &self, r:&Ray, t_min:f32, t_max:f32, h:&mut hit ) -> bool {
         // the simplified version
-        let oc = r.o - self.center;
-        let a = dot(r.dir, r.dir);
+        let oc:vec3 = r.o - self.center;
+        let a = dot(r.dir, r.dir).sqrt();
         let b = dot(oc, r.dir);
-        let c = dot(oc, oc) - self.radius*self.radius;
+        let c = dot(oc, oc).sqrt() - self.radius*self.radius;
         
         let discriminant = b*b - a*c;
-        if discriminant < 0.0 { return false; } 
-      
-        i.t     = -b - sqrt(discriminant)/a;
-        i.tfar  = i.t;
-        i.pos   = r.at(i.t);
-        let on  = (i.pos - self.center)/self.radius;
-        i.set_face_normal(r, &on);
+        if discriminant > 0f32 {
+            let root = sqrt(discriminant);
+            let mut temp = (-b-root)/a;
+            if temp<t_max && temp>t_min {
+                h.t = temp;
+                h.pos = r.at(h.t);
+                let on = (h.pos - self.center)/self.radius;
+                h.set_face_normal(r, on);
+                return true;
+            }
+
+            temp = (-b+root)/a;
+            if temp<t_max && temp>t_min {
+                h.t = temp;
+                h.pos = r.at(h.t);
+                let on = (h.pos - self.center)/self.radius;
+                h.set_face_normal(r, on);
+                return true;
+            }
+        }
 
         return true;
     }
@@ -49,11 +62,17 @@ impl<T: Shape> ShapeList<T> {
     pub fn push(&mut self, shape:T) {
         self.list.push(shape)
     }
-    pub fn hit(&self, r:&Ray, i:&mut Iact) -> bool {
+    pub fn hit(&self, r:&Ray, t_min:f32, t_max:f32, h:&mut hit) -> bool {
+        let mut i = hit::default();
         let mut hit = false;
+        let mut closest = t_max;
+
         for object in &self.list {
-            if object.intersect(r, i) {
+            if object.intersect(r, t_min, closest, &mut i) {
                 hit = true;
+                closest = i.t;
+                *h = i;
+                //println!("{}", h.t)
             }
         }
         return hit;

@@ -7,11 +7,12 @@ use intersect::*;
 use shape::*;
 use rxmath::vector::*;
 
-pub fn ray_color(r:Ray, objects:&ShapeList<Sphere>) -> Fvec3 {
-    let o = vec3(0f32, 0f32, -1f32);
-    let mut i : Iact = Iact::default();
-    
-    if objects.hit(&r, &mut i) { 
+pub fn ray_color(r:Ray, objects:&ShapeList<Sphere>) -> vec3 {
+    let mut i:hit = hit::default();
+    let t_min = 0.032;
+    let t_max = f32::MAX;
+
+    if objects.hit(&r, t_min, t_max, &mut i) { 
         return (i.norm+vec3(1f32, 1f32, 1f32))*0.5;
     }
 
@@ -33,8 +34,8 @@ fn main() {
     // World
 
     let mut world : ShapeList<Sphere> = ShapeList::new();
-    world.push( Sphere{center:vec3(0f32, 0f32, -1f32), radius:0.5} );
-    world.push( Sphere{center:vec3(0f32, 1f32, -1f32), radius:0.5} );
+    world.push( Sphere{center:vec3(0f32, 0f32, -1f32), radius:0.1f32} );
+    //world.push( Sphere{center:vec3(0f32, -50f32, -1f32), radius:50f32} );
 
     // Camera
 
@@ -49,13 +50,13 @@ fn main() {
     let lower_left_corner = origin - horizontal/2f32 - vertical/2f32 -vec3(0.0, 0.0, focal_length);
 
     // A redundant loop to demonstrate reading image data
-    for y in (0..imgy).rev() {
+    for y in (0..imgy) {
         for x in 0..imgx {
             let u  = x as f32 / (imgx-1) as f32;
             let v  = y as f32 / (imgy-1) as f32;
 
             let r : Ray = Ray{ o:origin, dir:lower_left_corner + horizontal*u + vertical*v - origin }; 
-            let pixel_color = ray_color(r, &mut world)*256f32;
+            let pixel_color = ray_color(r, &mut world)*255f32;
 
             let pixel = imgbuf.get_pixel_mut(x, y);
             *pixel = image::Rgb([pixel_color.x as u8, pixel_color.y as u8, pixel_color.z as u8]);

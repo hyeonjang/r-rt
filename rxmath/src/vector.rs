@@ -81,6 +81,16 @@ impl_cmp!(Gvec3<T>{ x y z });
 impl_cmp!(Gvec4<T>{ x y z w });
 // 1.2. ops
 impl_ops!(Gvec2<T>{ x y });
+impl<T> std::ops::Index<usize> for Gvec2<T> {
+    type Output = T;
+    fn index<'a>(&'a self, i:usize) -> &T {
+        match i {
+            0 => &self.x,
+            1 => &self.y,
+            _ => &&self.x,
+        }
+    }
+}
 impl_ops!(Gvec4<T>{ x y z w });
 // 1.2.1 cross product of Vector3 
 impl<T: Copy+std::ops::Mul<Output=T>+std::ops::Sub<Output=T>> std::ops::Mul<Gvec3<T>> for Gvec3<T>{

@@ -10,3 +10,4 @@ edition = "2018"
 rxmath = { path = "../rxmath" }
 image = "0.23.8"
 num-complex = "0.3.0"
+rand = "0.7.3"

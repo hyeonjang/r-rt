@@ -19,7 +19,6 @@ pub struct hit {
     pub pos   : vec3,
     pub norm  : vec3,
     pub t     : f32,
-    pub tfar  : f32,
     pub front : bool,
 }
 

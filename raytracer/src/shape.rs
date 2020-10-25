@@ -24,16 +24,16 @@ impl Shape for Sphere {
         let a = dot(r.dir, r.dir).sqrt();
         let b = dot(oc, r.dir);
         let c = dot(oc, oc).sqrt() - self.radius*self.radius;
-        
         let discriminant = b*b - a*c;
+
         if discriminant > 0f32 {
             let root = sqrt(discriminant);
             let mut temp = (-b-root)/a;
+
             if temp<t_max && temp>t_min {
                 h.t = temp;
                 h.pos = r.at(h.t);
-                let on = (h.pos - self.center)/self.radius;
-                h.set_face_normal(r, on);
+                h.norm = (h.pos - self.center)/self.radius;
                 return true;
             }
 
@@ -41,13 +41,11 @@ impl Shape for Sphere {
             if temp<t_max && temp>t_min {
                 h.t = temp;
                 h.pos = r.at(h.t);
-                let on = (h.pos - self.center)/self.radius;
-                h.set_face_normal(r, on);
+                h.norm = (h.pos - self.center)/self.radius;
                 return true;
             }
         }
-
-        return true;
+        return false;
     }
 }
 

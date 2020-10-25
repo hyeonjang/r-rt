@@ -2,14 +2,30 @@ extern crate image;
 
 pub mod intersect;
 pub mod shape;
+pub mod camera;
 
+use rxmath::vector::*;
 use intersect::*;
 use shape::*;
-use rxmath::vector::*;
+use camera::*;
+
+pub fn hit_sphere(center:vec3, radius:f32, r:Ray) -> f32{
+    let oc = r.o - center;
+    let a = dot(r.dir, r.dir);
+    let b = 2.0 * dot(oc, r.dir);
+    let c = dot(oc, oc) - radius*radius;
+    let disc = b*b - 4.0*a*c;
+    if disc < 0.0 {
+        return -1.0;
+    } else {
+        return (-b-sqrt(disc))/(2.0*a);
+    }
+}
+
 
 pub fn ray_color(r:Ray, objects:&ShapeList<Sphere>) -> vec3 {
     let mut i:hit = hit::default();
-    let t_min = 0.032;
+    let t_min = -1.0f32;
     let t_max = f32::MAX;
 
     if objects.hit(&r, t_min, t_max, &mut i) { 
@@ -34,28 +50,20 @@ fn main() {
     // World
 
     let mut world : ShapeList<Sphere> = ShapeList::new();
-    world.push( Sphere{center:vec3(0f32, 0f32, -1f32), radius:0.1f32} );
-    //world.push( Sphere{center:vec3(0f32, -50f32, -1f32), radius:50f32} );
+    world.push( Sphere{center:vec3(0f32, 0f32, -1f32), radius:0.5f32} );
+    //world.push( Sphere{center:vec3(0f32, 0f32, -1f32), radius:0.25f32} );
+
 
     // Camera
-
-    let viewport_height = 2.0;
-    let viewport_width  = ASPECT * viewport_height;
-    let focal_length    = 1.0;
-    
-    let origin      = vec3(0.0, 0.0, 0.0);
-    let horizontal  = vec3(viewport_width, 0.0, 0.0);
-    let vertical    = vec3(0.0, viewport_height, 0.0);
-
-    let lower_left_corner = origin - horizontal/2f32 - vertical/2f32 -vec3(0.0, 0.0, focal_length);
-
+    let cam = Camera::new();
+ 
     // A redundant loop to demonstrate reading image data
-    for y in (0..imgy) {
+    for y in (0..imgy).rev() {
         for x in 0..imgx {
             let u  = x as f32 / (imgx-1) as f32;
             let v  = y as f32 / (imgy-1) as f32;
 
-            let r : Ray = Ray{ o:origin, dir:lower_left_corner + horizontal*u + vertical*v - origin }; 
+            let r : Ray = cam.get_ray(u, v);
             let pixel_color = ray_color(r, &mut world)*255f32;
 
             let pixel = imgbuf.get_pixel_mut(x, y);

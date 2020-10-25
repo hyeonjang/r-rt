@@ -173,16 +173,16 @@ impl VecOp<Gvec4<f32>> for Gvec4<f32> {
 }
 
 //////////////////////////////
-// 3. Final type aliasing?? <<aliasing is right expression?>>
-pub type Fvec2 = Gvec2<f32>;
-pub type Ivec2 = Gvec2<i32>;
-pub type Uvec2 = Gvec2<u32>;
-pub type Fvec3 = Gvec3<f32>;
-pub type Ivec3 = Gvec3<i32>;
-pub type Uvec3 = Gvec3<u32>;
-pub type Fvec4 = Gvec4<f32>;
-pub type Ivec4 = Gvec4<i32>;
-pub type Uvec4 = Gvec4<u32>;
+// 3. Final type aliasing
+#[allow(non_camel_case_types)] pub type vec2 = Gvec2<f32>;
+#[allow(non_camel_case_types)] pub type ivec2 = Gvec2<i32>;
+#[allow(non_camel_case_types)] pub type uvec2 = Gvec2<u32>;
+#[allow(non_camel_case_types)] pub type vec3 = Gvec3<f32>;
+#[allow(non_camel_case_types)] pub type ivec3 = Gvec3<i32>;
+#[allow(non_camel_case_types)] pub type uvec3 = Gvec3<u32>;
+#[allow(non_camel_case_types)] pub type vec4 = Gvec4<f32>;
+#[allow(non_camel_case_types)] pub type ivec4 = Gvec4<i32>;
+#[allow(non_camel_case_types)] pub type uvec4 = Gvec4<u32>;
 
 //////////////////////////////
 /// ** considering point type
@@ -199,22 +199,22 @@ pub type Upoint4 = Gvec4<u32>;
 // exactly todo = array to vector copy
 //////////////////////////////
 // 4. Rust Display, Debug Printing Functions
-impl_fmt!(Fvec2{ x y }, "<{} {}>");
-impl_fmt!(Ivec2{ x y }, "<{} {}>");
-impl_fmt!(Uvec2{ x y }, "<{} {}>");
-impl_fmt!(Fvec3{ x y z }, "<{} {} {}>");
-impl_fmt!(Ivec3{ x y z }, "<{} {} {}>");
-impl_fmt!(Uvec3{ x y z }, "<{} {} {}>");
-impl_fmt!(Fvec4{ x y z w }, "<{} {} {} {}>");
-impl_fmt!(Ivec4{ x y z w }, "<{} {} {} {}>");
-impl_fmt!(Uvec4{ x y z w }, "<{} {} {} {}>");
+impl_fmt!(vec2{ x y }, "<{} {}>");
+impl_fmt!(ivec2{ x y }, "<{} {}>");
+impl_fmt!(uvec2{ x y }, "<{} {}>");
+impl_fmt!(vec3{ x y z }, "<{} {} {}>");
+impl_fmt!(ivec3{ x y z }, "<{} {} {}>");
+impl_fmt!(uvec3{ x y z }, "<{} {} {}>");
+impl_fmt!(vec4{ x y z w }, "<{} {} {} {}>");
+impl_fmt!(ivec4{ x y z w }, "<{} {} {} {}>");
+impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
 
 //@@todo pub function to calculate ~~~~
 
-#[inline] pub fn dot( v0:Fvec3, v1:Fvec3 ) -> f32 {
+#[inline] pub fn dot( v0:vec3, v1:vec3 ) -> f32 {
     v0.dot(v1)
 }
-#[inline] pub fn normalize( v:Fvec3 ) -> Fvec3 {
+#[inline] pub fn normalize( v:vec3 ) -> vec3 {
     v.normalize()
 }
 #[inline] pub fn sqrt(f:f32) -> f32 {

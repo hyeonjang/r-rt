@@ -14,7 +14,7 @@
 // limitations under the License.
 //*********************************************************
 #![crate_type="lib"]
-
+#![allow(unused_must_use)]
 ////////////////////////////////////
 /// 0. const variable macro funtions
 #[macro_export] macro_rules! INFI {
@@ -33,6 +33,12 @@
 
 #[inline] pub fn degrees_to_radians(degrees:f32) {
     degrees * PI!(f32) / 180.0;
+}
+
+#[inline] pub fn clamp(x:f32, min:f32, max:f32) -> f32 {
+    if x<min { return min; } 
+    if x>max { return max; }
+    return x;
 }
 
 #[macro_use]

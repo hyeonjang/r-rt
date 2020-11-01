@@ -41,17 +41,17 @@ fn main() {
 
     // Image
     const ASPECT:f32 = 16.0/9.0;
-    let imgx = 800;
+    let imgx = 400;
     let imgy = (imgx as f32/ASPECT) as u32;
-    let sample_count = 64;
+    let sample_count = 16;
 
     // Create a new ImgBuf with width: imgx and height: imgy
     let mut imgbuf = image::ImageBuffer::new(imgx, imgy);
 
     // World
     let mut world : ShapeList<Sphere> = ShapeList::new();
-    world.push( Sphere{center:vec3(0f32, 0f32, -1f32), radius:0.5f32} );
-    //world.push( Sphere{center:vec3(0f32, 0f32, -1f32), radius:0.25f32} );
+    world.push( Sphere{center:vec3(0f32, 0f32, -1f32), radius:0.25f32} );
+    world.push( Sphere{center:vec3(0f32, 2f32, -4f32), radius:1.0f32} );
 
     // Camera
     let cam = Camera::new();
@@ -66,7 +66,6 @@ fn main() {
                 let r : Ray = cam.get_ray(u, v);
                 pixel_color += ray_color(r, &mut world);
             }
-            //let rgb = pixel_color/64.0;
             let rgb = write_color(pixel_color, sample_count);
             let pixel = imgbuf.get_pixel_mut(x, y);
             *pixel = image::Rgb([rgb.x as u8, rgb.y as u8, rgb.z as u8]);

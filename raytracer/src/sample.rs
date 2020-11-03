@@ -29,6 +29,6 @@ pub fn random_range_f64(x:f64, y:f64) -> f64 {
     return sampled;
 }
 pub fn random_unit_sphere() -> vec3 {
-    let mut p = vec3(random_range_f64(-1f64, 1f64), random_range_f64(-1f64, 1f64), random_range_f64(-1f64, 1f64));
+    let p = vec3(random_range_f64(-1f64, 1f64), random_range_f64(-1f64, 1f64), random_range_f64(-1f64, 1f64));
     return p;
 }

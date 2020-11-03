@@ -1,11 +1,9 @@
 use rxmath::vector::*;
-//use rxmath::matrix::*;
-/////////////////////////
 use crate::intersect::*;
-/////////////////////////
-/// 
+use crate::sample::*;
+
 pub trait Shape {
-    fn intersect( &self, r:&Ray, t_min:f64, t_max:f64, i:&mut hit ) -> bool;
+    fn intersect( &self, r:&ray, t_min:f64, t_max:f64, i:&mut hit ) -> bool;
 }
 
 pub struct ShapeList<T: Shape>{
@@ -18,7 +16,7 @@ pub struct Sphere {
 }
 
 impl Shape for Sphere {
-    fn intersect( &self, r:&Ray, t_min:f64, t_max:f64, h:&mut hit ) -> bool {
+    fn intersect( &self, r:&ray, t_min:f64, t_max:f64, h:&mut hit ) -> bool {
         // the simplified version
         let oc:vec3 = r.o - self.center;
         let a = r.dir.length2();
@@ -54,7 +52,7 @@ impl<T: Shape> ShapeList<T> {
     pub fn push(&mut self, shape:T) {
         self.list.push(shape)
     }
-    pub fn hit(&self, r:&Ray, t_min:f64, t_max:f64, h:&mut hit) -> bool {
+    pub fn hit(&self, r:&ray, t_min:f64, t_max:f64, h:&mut hit) -> bool {
         let mut i = hit::default();
         let mut hit = false;
         let mut closest = t_max;
@@ -68,5 +66,50 @@ impl<T: Shape> ShapeList<T> {
             }
         }
         return hit;
+    }
+}
+
+/// material
+/// 
+
+pub trait material {
+    fn scatter( &self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool;
+}
+
+pub struct lambertian {
+    albedo:vec3,
+}
+
+pub struct metal {
+    albedo:vec3,
+}
+
+impl material for lambertian{
+    fn scatter( &self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
+        let mut scatter_direction = h.norm + random_unit_sphere();
+        let temp = ray{o:h.pos, dir:scatter_direction};
+
+        if scatter_direction.near_zero() {
+            scatter_direction = h.norm;
+        }
+
+        *scattered = temp;
+        *attenuation = self.albedo;
+        return true;
+    }
+}
+
+impl material for metal {
+    fn scatter( &self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
+        let mut scatter_direction = h.norm + random_unit_sphere();
+        let temp = ray{o:h.pos, dir:scatter_direction};
+
+        if scatter_direction.near_zero() {
+            scatter_direction = h.norm;
+        }
+
+        *scattered = temp;
+        *attenuation = self.albedo;
+        return true;
     }
 }

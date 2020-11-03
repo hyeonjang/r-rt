@@ -24,7 +24,7 @@ impl Camera {
         Camera{ origin:_origin, horizontal:_horizontal, vertical:_vertical, lower_left_corner:_lower_left_corner, }
     }
 
-    pub fn get_ray(self, u:f64, v:f64) -> Ray{
-        return Ray{o:self.origin, dir:(self.lower_left_corner+self.horizontal*u+self.vertical*v-self.origin)}
+    pub fn get_ray(self, u:f64, v:f64) -> ray{
+        return ray{o:self.origin, dir:(self.lower_left_corner+self.horizontal*u+self.vertical*v-self.origin)}
     }
 }

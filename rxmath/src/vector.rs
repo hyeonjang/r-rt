@@ -159,6 +159,13 @@ impl VecOp<Gvec3<f64>> for Gvec3<f64> {
     }
 }
 
+impl Gvec3<f64> {
+    pub fn near_zero(self) -> bool {
+        const S:f64 = 1e-8;
+        return (self.x.abs()<S) && (self.y.abs()<S) && (self.z.abs()<S)
+    }
+}
+
 // 2.1.3 Gvec4
 impl VecOp<Gvec4<f64>> for Gvec4<f64> {
     type Output = f64;

@@ -12,13 +12,18 @@ use shape::*;
 use camera::*;
 use sample::*;
 
-pub fn ray_color(r:Ray, objects:&ShapeList<Sphere>) -> vec3 {
+pub fn ray_color(r:Ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
     let mut i:hit = hit::default();
-    let t_min = -1.0f32;
-    let t_max = f32::MAX;
+    let t_min = 0.001f64;
+    let t_max = f64::MAX;
+
+    if depth <= 0 {
+        return vec3(0f64, 0f64, 0f64);
+    }
 
     if objects.hit(&r, t_min, t_max, &mut i) { 
-        return (i.norm+vec3(1f32, 1f32, 1f32))*0.5;
+        let target:vec3 = i.pos + i.norm + random_unit_sphere().normalize();
+        return ray_color(Ray{o:i.pos, dir:target-i.pos}, objects, depth-1)*0.5;
     }
 
     let unit_direction = r.dir.normalize();
@@ -26,32 +31,33 @@ pub fn ray_color(r:Ray, objects:&ShapeList<Sphere>) -> vec3 {
     return vec3(1.0, 1.0, 1.0)*(1.0-t) + vec3(0.5, 0.7, 1.0)*t;
 }
 
-pub fn write_color(pixel_color:vec3, sample_count:i32) -> vec3 {
-    let scale = 1.0 / sample_count as f32;
+pub fn write_color(pixel_color:vec3, sample_count:i64) -> vec3 {
+    let scale = 1.0 / sample_count as f64;
    
-    let r = pixel_color.x * scale;
-    let g = pixel_color.y * scale;
-    let b = pixel_color.z * scale;
+    let r = (pixel_color.x * scale).sqrt();
+    let g = (pixel_color.y * scale).sqrt();
+    let b = (pixel_color.z * scale).sqrt();
 
-    return vec3(clamp(r, 0.0, 1.0), clamp(g, 0.0, 1.0), clamp(b, 0.0, 1.0)) * 256f32;
+    return vec3((clamp(r, 0.0, 1.0)*256f64), (clamp(g, 0.0, 1.0)*256f64), (clamp(b, 0.0, 1.0)*256f64));
 }
 
 
 fn main() {
 
     // Image
-    const ASPECT:f32 = 16.0/9.0;
+    const ASPECT:f64 = 16.0/9.0;
     let imgx = 400;
-    let imgy = (imgx as f32/ASPECT) as u32;
+    let imgy = (imgx as f64/ASPECT) as u32;
     let sample_count = 16;
+    const max_depth:u32 = 50;
 
     // Create a new ImgBuf with width: imgx and height: imgy
     let mut imgbuf = image::ImageBuffer::new(imgx, imgy);
 
     // World
     let mut world : ShapeList<Sphere> = ShapeList::new();
-    world.push( Sphere{center:vec3(0f32, 0f32, -1f32), radius:0.25f32} );
-    world.push( Sphere{center:vec3(0f32, 2f32, -4f32), radius:1.0f32} );
+    world.push( Sphere{center:vec3(0f64, 0f64, -1f64), radius:0.5f64} );
+    world.push( Sphere{center:vec3(0f64, 100.5f64, -1f64), radius:100.0f64} );
 
     // Camera
     let cam = Camera::new();
@@ -61,10 +67,10 @@ fn main() {
         for x in 0..imgx {
             let mut pixel_color = vec3(0.0, 0.0, 0.0);
             for i in 0..sample_count {
-                let u  = (x as f32 + random_f32())/(imgx-1) as f32;
-                let v  = (y as f32 + random_f32())/(imgy-1) as f32;        
+                let u  = (x as f64 + random_f64())/(imgx-1) as f64;
+                let v  = (y as f64 + random_f64())/(imgy-1) as f64;        
                 let r : Ray = cam.get_ray(u, v);
-                pixel_color += ray_color(r, &mut world);
+                pixel_color += ray_color(r, &mut world, max_depth);
             }
             let rgb = write_color(pixel_color, sample_count);
             let pixel = imgbuf.get_pixel_mut(x, y);

@@ -8,7 +8,7 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn at(self, t:f32) -> vec3 {
+    pub fn at(self, t:f64) -> vec3 {
         return self.o + self.dir*t;
     } 
 }
@@ -18,7 +18,7 @@ impl Ray {
 pub struct hit {
     pub pos   : vec3,
     pub norm  : vec3,
-    pub t     : f32,
+    pub t     : f64,
     pub front : bool,
 }
 

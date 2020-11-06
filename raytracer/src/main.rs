@@ -67,7 +67,7 @@ fn main() {
     for y in (0..imgy).rev() {
         for x in 0..imgx {
             let mut pixel_color = vec3(0.0, 0.0, 0.0);
-            for i in 0..sample_count {
+            for _i in 0..sample_count {
                 let u  = (x as f64 + random_f64())/(imgx-1) as f64;
                 let v  = (y as f64 + random_f64())/(imgy-1) as f64;        
                 let r : ray = cam.get_ray(u, v);

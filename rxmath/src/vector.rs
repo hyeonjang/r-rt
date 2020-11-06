@@ -128,8 +128,8 @@ impl VecOp<Gvec2<f64>> for Gvec2<f64> {
     #[inline] fn length(&self) -> f64 {
         self.length2().sqrt()
     }
-    #[inline] fn dot(self,_v:Gvec2<f64>) -> f64 {
-        self.x.mul_add(_v.x, self.y * _v.y)
+    #[inline] fn dot(self, v:Gvec2<f64>) -> f64 {
+        self.x.mul_add(v.x, self.y * v.y)
     }
     #[inline] fn normalize(self) -> Self {
         self/self.length()
@@ -182,8 +182,8 @@ impl VecOp<Gvec4<f64>> for Gvec4<f64> {
     #[inline] fn length(&self) -> f64 {
         self.length2().sqrt()
     }
-    #[inline] fn dot(self,_v:Gvec4<f64>) -> f64 {
-        self.x.mul_add(_v.x, self.y.mul_add(self.y, _v.z.mul_add(self.z, _v.w*self.w)))
+    #[inline] fn dot(self,v:Gvec4<f64>) -> f64 {
+        self.x.mul_add(v.x, self.y.mul_add(self.y, v.z.mul_add(self.z, v.w*self.w)))
     }
     #[inline] fn normalize(self) -> Self {
         self/self.length()

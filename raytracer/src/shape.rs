@@ -72,20 +72,23 @@ impl<T: Shape> ShapeList<T> {
 /// material
 /// 
 
+#[allow(non_camel_case_types)]
 pub trait material {
     fn scatter( &self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool;
 }
 
+#[allow(non_camel_case_types)]
 pub struct lambertian {
     albedo:vec3,
 }
 
+#[allow(non_camel_case_types)]
 pub struct metal {
     albedo:vec3,
 }
 
 impl material for lambertian{
-    fn scatter( &self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
+    fn scatter( &self, _r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
         let mut scatter_direction = h.norm + random_unit_sphere();
         let temp = ray{o:h.pos, dir:scatter_direction};
 
@@ -100,7 +103,7 @@ impl material for lambertian{
 }
 
 impl material for metal {
-    fn scatter( &self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
+    fn scatter( &self, _r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
         let mut scatter_direction = h.norm + random_unit_sphere();
         let temp = ray{o:h.pos, dir:scatter_direction};
 

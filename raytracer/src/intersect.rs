@@ -2,6 +2,7 @@ use rxmath::vector::*;
 //use rxmath::matrix::*;
 
 #[derive(Default, Copy, Clone)]
+#[allow(non_camel_case_types)]
 pub struct ray {
     pub o : vec3,
     pub dir : vec3,

@@ -17,7 +17,7 @@ pub struct ShapeList<T: Shape>{
 pub struct Sphere {
     pub center : vec3,
     pub radius : f64,
-    pub mat_ptr : Box<material>,
+    pub mat_ptr : Rc<material>,
 }
 
 impl Shape for Sphere {

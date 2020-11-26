@@ -67,13 +67,13 @@ fn main() {
     let mut imgbuf = image::ImageBuffer::new(imgx, imgy);
 
     // Material List
-    let material_ground = Rc::<lambertian>::new(lambertian::new(vec3(0.8, 0.8, 0.0)));
+    let material_ground = Rc::new(lambertian::new(vec3(0.8, 0.8, 0.0)));
 
     // World
     let mut world = ShapeList::new();
-    world.push( Sphere{center:vec3(0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_ground} );
-    world.push( Sphere{center:vec3(-1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_ground} );
-    world.push( Sphere{center:vec3(0f64, 100.5f64, -1f64), radius:100.0f64, mat_ptr:material_ground} );
+    world.push( Sphere{center:vec3(0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_ground.clone()} );
+    world.push( Sphere{center:vec3(-1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_ground.clone()} );
+    world.push( Sphere{center:vec3(0f64, 100.5f64, -1f64), radius:100.0f64, mat_ptr:material_ground.clone()} );
 
     // Camera
     let cam = Camera::new();

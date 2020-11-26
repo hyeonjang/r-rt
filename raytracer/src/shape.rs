@@ -1,3 +1,7 @@
+// External crate
+use std::rc::Rc;
+
+// Custom crate
 use rxmath::vector::*;
 use crate::intersect::*;
 use crate::sample::*;
@@ -13,6 +17,7 @@ pub struct ShapeList<T: Shape>{
 pub struct Sphere {
     pub center : vec3,
     pub radius : f64,
+    pub mat_ptr : Box<material>,
 }
 
 impl Shape for Sphere {

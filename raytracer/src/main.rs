@@ -1,9 +1,11 @@
 extern crate image;
 
-// External create
-// 1. time
+// std
 use std::time::{Instant};
-use chrono::{DateTime, Utc};
+use std::rc::Rc;
+
+// External create
+use chrono::{Utc};
 
 // Custom crate
 pub mod intersect;
@@ -65,18 +67,20 @@ fn main() {
     let mut imgbuf = image::ImageBuffer::new(imgx, imgy);
 
     // Material List
+    let material_ground = Rc::<material>::new();
+
     // World
     let mut world = ShapeList::new();
-    world.push( Sphere{center:vec3(0f64, 0f64, -1f64), radius:0.5f64} );
-    world.push( Sphere{center:vec3(-1.0f64, 0f64, -1f64), radius:0.5f64} );
-    world.push( Sphere{center:vec3(0f64, 100.5f64, -1f64), radius:100.0f64} );
+    world.push( Sphere{center:vec3(0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_ground} );
+    world.push( Sphere{center:vec3(-1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_ground} );
+    world.push( Sphere{center:vec3(0f64, 100.5f64, -1f64), radius:100.0f64, mat_ptr:material_ground} );
 
     // Camera
     let cam = Camera::new();
  
     // Ray Trace!
     let start = Instant::now();
-    for y in (0..imgy).rev() {
+    for y in (0..imgy).rev() { 
         for x in 0..imgx {
             let mut pixel_color = vec3(0.0, 0.0, 0.0);
             for _i in 0..sample_count {

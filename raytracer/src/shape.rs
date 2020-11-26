@@ -87,6 +87,12 @@ pub struct lambertian {
     albedo:vec3,
 }
 
+impl lambertian {
+    pub fn new(v:vec3)->lambertian {
+        lambertian{ albedo:v }
+    }
+}
+
 #[allow(non_camel_case_types)]
 pub struct metal {
     albedo:vec3,

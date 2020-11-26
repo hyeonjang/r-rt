@@ -67,7 +67,7 @@ fn main() {
     let mut imgbuf = image::ImageBuffer::new(imgx, imgy);
 
     // Material List
-    let material_ground = Rc::<material>::new();
+    let material_ground = Rc::<lambertian>::new(lambertian::new(vec3(0.8, 0.8, 0.0)));
 
     // World
     let mut world = ShapeList::new();

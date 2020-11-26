@@ -3,6 +3,8 @@ extern crate image;
 // std
 use std::time::{Instant};
 use std::rc::Rc;
+use std::borrow::Borrow;
+use std::cell::RefCell;
 
 // External create
 use chrono::{Utc};
@@ -22,7 +24,7 @@ use sample::*;
 
 // static variables
 static NAME:&'static str = "ray-tracer";
-pub fn get_date()->String {return Utc::now().format("%Y-%m-%d").to_string();}
+pub fn get_date()->String{ return Utc::now().format("%Y-%m-%d").to_string(); }
 
 pub fn ray_color(r:ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
     let mut i:hit = hit::default();
@@ -34,8 +36,11 @@ pub fn ray_color(r:ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
     }
 
     if objects.hit(&r, t_min, t_max, &mut i) { 
-        let target:vec3 = i.pos + random_hemisphere(i.norm);
-        return ray_color(ray{o:i.pos, dir:target-i.pos}, objects, depth-1)*0.5;
+        let mut scattered:ray = ray::default();
+        let mut attenuation = vec3(1.0, 1.0, 1.0);
+        if material::scatter(&*i.mat_ptr, &r, &i, &mut attenuation, &mut scattered) {
+            return attenuation * ray_color(ray::new(scattered.o, scattered.dir), objects, depth-1)*0.5;
+        }
     }
 
     let unit_direction = r.dir.normalize();
@@ -68,12 +73,18 @@ fn main() {
 
     // Material List
     let material_ground = Rc::new(lambertian::new(vec3(0.8, 0.8, 0.0)));
+    let material_center = Rc::new(lambertian::new(vec3(0.7, 0.3, 0.3)));
 
     // World
     let mut world = ShapeList::new();
     world.push( Sphere{center:vec3(0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_ground.clone()} );
     world.push( Sphere{center:vec3(-1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_ground.clone()} );
     world.push( Sphere{center:vec3(0f64, 100.5f64, -1f64), radius:100.0f64, mat_ptr:material_ground.clone()} );
+
+    let cloned = &*material_ground;
+
+    println!("{:?}", Rc::strong_count(&material_ground) );
+    println!("{:?}", Rc::weak_count(&material_ground) );
 
     // Camera
     let cam = Camera::new();
@@ -97,6 +108,7 @@ fn main() {
     let duration = start.elapsed();
     println!("[{}]time duration:{:?}", NAME, duration);
 
-    let path = format!("../result/{}.png", get_date());
+    let current_dir = std::env::current_dir().unwrap().to_str().unwrap().to_owned();
+    let path = format!("{}/result/{}.png", current_dir, get_date());
     imgbuf.save(path).unwrap();
 }

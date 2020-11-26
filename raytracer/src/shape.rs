@@ -3,6 +3,7 @@ use std::rc::Rc;
 
 // Custom crate
 use rxmath::vector::*;
+
 use crate::intersect::*;
 use crate::sample::*;
 
@@ -17,7 +18,7 @@ pub struct ShapeList<T: Shape>{
 pub struct Sphere {
     pub center : vec3,
     pub radius : f64,
-    pub mat_ptr : Rc<material>,
+    pub mat_ptr : Rc<dyn material>,
 }
 
 impl Shape for Sphere {
@@ -65,9 +66,8 @@ impl<T: Shape> ShapeList<T> {
         for object in &self.list {
             if object.intersect(r, t_min, closest, &mut i) {
                 hit = true;
-                closest = i.t;
-                *h = i;
-                //println!("{}", h.t)
+                closest = i.t.clone();
+                *h = i.clone();
             }
         }
         return hit;
@@ -79,7 +79,7 @@ impl<T: Shape> ShapeList<T> {
 
 #[allow(non_camel_case_types)]
 pub trait material {
-    fn scatter( &self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool;
+    fn scatter(&self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool;
 }
 
 #[allow(non_camel_case_types)]
@@ -101,14 +101,16 @@ pub struct metal {
 impl material for lambertian {
     fn scatter( &self, _r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
         let mut scatter_direction = h.norm + random_unit_vector();
-        let temp = ray{o:h.pos, dir:scatter_direction};
 
         if scatter_direction.near_zero() {
             scatter_direction = h.norm;
         }
 
-        *scattered = temp;
+        *scattered = ray{o:h.pos, dir:scatter_direction};
         *attenuation = self.albedo;
+
+        //println!("scattered{:?}{:?}", scattered.o, scattered.dir);
+        //println!("{:?}", attenuation);
         return true;
     }
 }

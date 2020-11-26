@@ -1,5 +1,8 @@
+use std::rc::Rc;
+
 use rxmath::vector::*;
-//use rxmath::matrix::*;
+
+use crate::shape::*;
 
 #[derive(Default, Copy, Clone)]
 #[allow(non_camel_case_types)]
@@ -14,18 +17,25 @@ impl ray {
     } 
 }
 
-#[derive(Default, Copy, Clone)]
+#[derive(Clone)]
 #[allow(non_camel_case_types)]
 pub struct hit {
     pub pos   : vec3,
     pub norm  : vec3,
     pub t     : f64,
     pub front : bool,
+    pub mat_ptr : Rc<dyn material>,
+}
+
+impl std::default::Default for hit {
+    fn default() -> hit {
+        hit { pos:vec3(0.0, 0.0, 0.0), norm:vec3(0.0, 0.0, 0.0), t:0.0, front:true, mat_ptr:Rc::new(lambertian::new(vec3(0.0, 0.0, 0.0))) }
+    }
 }
 
 #[allow(dead_code)]
 impl ray {
-    fn new(_o:vec3, _d:vec3) -> ray {
+    pub fn new(_o:vec3, _d:vec3) -> ray {
         ray{ o:_o, dir:_d }
     }
 }

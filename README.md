@@ -2,4 +2,4 @@
 
 Daily Result
 ===
-![result](./raytracer/result.png)
+![result](./result/daily.png)

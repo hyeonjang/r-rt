@@ -29,6 +29,19 @@ pub fn random_range_f64(x:f64, y:f64) -> f64 {
     return sampled;
 }
 pub fn random_unit_sphere() -> vec3 {
-    let p = vec3(random_range_f64(-1f64, 1f64), random_range_f64(-1f64, 1f64), random_range_f64(-1f64, 1f64));
-    return p;
+    return vec3(random_range_f64(-1f64, 1f64), random_range_f64(-1f64, 1f64), random_range_f64(-1f64, 1f64));
+}
+
+pub fn random_unit_vector() -> vec3 {
+    return random_unit_sphere().normalize();
+}
+
+pub fn random_hemisphere(normal:vec3) -> vec3 {
+    let unit_sphere = random_unit_sphere();
+    if dot(unit_sphere, normal) > 0.0 {
+        return unit_sphere;
+    }
+    else {
+        return -unit_sphere;
+    }
 }

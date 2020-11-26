@@ -87,9 +87,9 @@ pub struct metal {
     albedo:vec3,
 }
 
-impl material for lambertian{
+impl material for lambertian {
     fn scatter( &self, _r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
-        let mut scatter_direction = h.norm + random_unit_sphere();
+        let mut scatter_direction = h.norm + random_unit_vector();
         let temp = ray{o:h.pos, dir:scatter_direction};
 
         if scatter_direction.near_zero() {

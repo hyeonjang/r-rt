@@ -88,25 +88,37 @@ pub struct lambertian {
     pub albedo:vec3,
 }
 
-impl lambertian {
-    pub fn new(v0:f64, v1:f64, v2:f64)->lambertian {
-        lambertian{ albedo:vec3(v0, v1, v2) }
-    }
-}
-
 #[allow(non_camel_case_types)]
 pub struct metal {
     albedo:vec3,
+    fuzz:f64,
+}
+
+#[allow(non_camel_case_types)]
+pub struct dielectric {
+    ir:f64,
+}
+
+impl lambertian {
+    pub fn new(x:f64, y:f64, z:f64)->lambertian {
+        lambertian{ albedo:vec3(x, y, z) }
+    }
 }
 
 impl metal {
-    pub fn new(x:f64, y:f64, z:f64)->metal {
-        metal{ albedo:vec3(x, y, z) }
+    pub fn new(v:vec3, f:f64)->metal {
+        metal{ albedo:v, fuzz:f }
+    }
+}
+
+impl dielectric {
+    pub fn new(r:f64) -> dielectric {
+        dielectric{ ir:r }
     }
 }
 
 impl material for lambertian {
-    fn scatter( &self, _r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
+    fn scatter(&self, _r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
         let mut scatter_direction = h.norm + random_unit_vector();
 
         if scatter_direction.near_zero() {
@@ -120,10 +132,34 @@ impl material for lambertian {
 }
 
 impl material for metal {
-    fn scatter( &self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
+    fn scatter(&self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
         let reflected = reflect(r.dir.normalize(), h.norm);
-        *scattered = ray::new(h.pos, reflected);
+        *scattered = ray::new(h.pos, reflected + random_unit_sphere()*self.fuzz);
         *attenuation = self.albedo;
         return dot(scattered.dir, h.norm) > 0.0;
+    }
+}
+
+impl material for dielectric {
+    fn scatter(&self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
+        *attenuation = vec3(1.0, 1.0, 1.0);
+        let refraction_ratio = { if h.front { 1.0/self.ir } else { self.ir } };
+
+        let unit_direction = r.dir;
+        let cos_theta = dot(-unit_direction, h.norm).min(1.0);
+        let sin_theta = sqrt(1.0-cos_theta*cos_theta);
+
+        let cannot_refract = refraction_ratio*sin_theta > 1.0;
+        let direction:vec3;
+
+        if cannot_refract {
+            direction = reflect(unit_direction, h.norm);
+        }
+        else {
+            direction = refract(unit_direction, h.norm, refraction_ratio);
+        }
+
+        *scattered = ray::new(h.pos, direction);
+        return true;
     }
 }

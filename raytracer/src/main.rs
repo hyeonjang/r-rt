@@ -35,7 +35,7 @@ pub fn ray_color(r:ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
 
     if objects.hit(&r, t_min, t_max, &mut i) { 
         let mut scattered:ray = ray::default();
-        let mut attenuation = vec3(0.0, 0.0, 0.0);
+        let mut attenuation = vec3(0f64, 0f64, 0f64);
         if i.mat_ptr.scatter(&r, &i, &mut attenuation, &mut scattered) {
             return ray_color(scattered, objects, depth-1)*0.5;
         }
@@ -74,9 +74,9 @@ fn main() {
 
     // Material List
     let material_ground = Rc::new(lambertian::new(0.8, 0.8, 0.0)); // why this b r g
-    let material_center = Rc::new(lambertian::new(0.7, 0.3, 0.3));
-    let material_left   = Rc::new(metal::new(0.8,0.8,0.8));
-    let material_right  = Rc::new(metal::new(0.2,0.8,0.6));
+    let material_center = Rc::new(lambertian::new(0.1, 0.2, 0.5));
+    let material_left   = Rc::new(dielectric::new(1.5));
+    let material_right  = Rc::new(metal::new(vec3(0.2,0.8,0.6), 1.0));
 
     // World
     let mut world = ShapeList::new();
@@ -90,7 +90,7 @@ fn main() {
  
     // Ray Trace!
     let start = Instant::now();
-    for y in (0..imgy).rev() { 
+    for y in 0..imgy { 
         for x in 0..imgx {
             let mut pixel_color = vec3(0.0, 0.0, 0.0);
             for _i in 0..sample_count {

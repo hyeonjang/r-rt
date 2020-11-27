@@ -244,3 +244,9 @@ impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
 #[inline] pub fn reflect(v:vec3, n:vec3) ->vec3 {
     return v - n*dot(v, n)*2.0;
 }
+#[inline] pub fn refract(uv:vec3, n:vec3, etai_over_etat:f64) -> vec3 {
+    let cos_theta = dot(uv, n).min(1.0);
+    let r_perp = (uv+n*cos_theta)*etai_over_etat;
+    let r_para = n * (-sqrt((1.0-r_perp.length2()).abs()));
+    return r_perp + r_para;
+}

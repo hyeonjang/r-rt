@@ -91,7 +91,7 @@ impl<T> std::ops::Index<usize> for Gvec2<T> {
         }
     }
 }
-impl_ops!(Gvec4<T>{ x y z w });
+impl_ops!(Gvec3<T>{ x y z });
 // 1.2.1 cross product of Vector3 
 impl<T: Copy+std::ops::Mul<Output=T>+std::ops::Sub<Output=T>> std::ops::Mul<Gvec3<T>> for Gvec3<T>{
     type Output = Self;
@@ -99,7 +99,7 @@ impl<T: Copy+std::ops::Mul<Output=T>+std::ops::Sub<Output=T>> std::ops::Mul<Gvec
         Gvec3::new( self.y*rhs.z-self.z*rhs.y, self.z*rhs.x-self.x*rhs.z, self.x*rhs.y-self.y*rhs.x )
      }
 } 
-impl_ops!(Gvec3<T>{ x y z });
+impl_ops!(Gvec4<T>{ x y z w });
 
 //////////////////////////////
 /// 2. Vector features
@@ -227,7 +227,6 @@ impl_fmt!(vec4{ x y z w }, "<{} {} {} {}>");
 impl_fmt!(ivec4{ x y z w }, "<{} {} {} {}>");
 impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
 
-//@@todo pub function to calculate ~~~~
 #[inline] pub fn dot( v0:vec3, v1:vec3 ) -> f64 {
     v0.dot(v1)
 }
@@ -237,3 +236,11 @@ impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
 #[inline] pub fn sqrt(f:f64) -> f64 {
     f.sqrt()
 } 
+#[inline] pub fn clamp(x:f64, min:f64, max:f64) -> f64 {
+    if x<min { return min; } 
+    if x>max { return max; }
+    return x;
+}
+#[inline] pub fn reflect(v:vec3, n:vec3) ->vec3 {
+    return v - n*dot(v, n)*2.0;
+}

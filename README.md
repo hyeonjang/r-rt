@@ -2,4 +2,4 @@
 
 Daily Result
 ===
-![result](./result/2020-11-26.png)
+![result](./result/2020-11-27.png)

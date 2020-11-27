@@ -44,6 +44,7 @@ impl Shape for Sphere {
         h.t = root;
         h.pos = r.at(h.t);
         h.norm = (h.pos - self.center)/self.radius;
+        h.mat_ptr = Rc::clone(&self.mat_ptr);
         return true;
     }
 }
@@ -84,18 +85,24 @@ pub trait material {
 
 #[allow(non_camel_case_types)]
 pub struct lambertian {
-    albedo:vec3,
+    pub albedo:vec3,
 }
 
 impl lambertian {
-    pub fn new(v:vec3)->lambertian {
-        lambertian{ albedo:v }
+    pub fn new(v0:f64, v1:f64, v2:f64)->lambertian {
+        lambertian{ albedo:vec3(v0, v1, v2) }
     }
 }
 
 #[allow(non_camel_case_types)]
 pub struct metal {
     albedo:vec3,
+}
+
+impl metal {
+    pub fn new(x:f64, y:f64, z:f64)->metal {
+        metal{ albedo:vec3(x, y, z) }
+    }
 }
 
 impl material for lambertian {
@@ -106,26 +113,17 @@ impl material for lambertian {
             scatter_direction = h.norm;
         }
 
-        *scattered = ray{o:h.pos, dir:scatter_direction};
+        *scattered = ray::new(h.pos, scatter_direction);
         *attenuation = self.albedo;
-
-        //println!("scattered{:?}{:?}", scattered.o, scattered.dir);
-        //println!("{:?}", attenuation);
         return true;
     }
 }
 
 impl material for metal {
-    fn scatter( &self, _r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
-        let mut scatter_direction = h.norm + random_unit_sphere();
-        let temp = ray{o:h.pos, dir:scatter_direction};
-
-        if scatter_direction.near_zero() {
-            scatter_direction = h.norm;
-        }
-
-        *scattered = temp;
+    fn scatter( &self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
+        let reflected = reflect(r.dir.normalize(), h.norm);
+        *scattered = ray::new(h.pos, reflected);
         *attenuation = self.albedo;
-        return true;
+        return dot(scattered.dir, h.norm) > 0.0;
     }
 }

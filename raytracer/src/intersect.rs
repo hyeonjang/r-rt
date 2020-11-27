@@ -29,7 +29,7 @@ pub struct hit {
 
 impl std::default::Default for hit {
     fn default() -> hit {
-        hit { pos:vec3(0.0, 0.0, 0.0), norm:vec3(0.0, 0.0, 0.0), t:0.0, front:true, mat_ptr:Rc::new(lambertian::new(vec3(0.0, 0.0, 0.0))) }
+        hit { pos:vec3(0.0, 0.0, 0.0), norm:vec3(0.0, 0.0, 0.0), t:0.0, front:true, mat_ptr:Rc::new(lambertian::new(0.0, 0.0, 0.0)) }
     }
 }
 

@@ -3,8 +3,6 @@ extern crate image;
 // std
 use std::time::{Instant};
 use std::rc::Rc;
-use std::borrow::Borrow;
-use std::cell::RefCell;
 
 // External create
 use chrono::{Utc};
@@ -37,9 +35,12 @@ pub fn ray_color(r:ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
 
     if objects.hit(&r, t_min, t_max, &mut i) { 
         let mut scattered:ray = ray::default();
-        let mut attenuation = vec3(1.0, 1.0, 1.0);
-        if material::scatter(&*i.mat_ptr, &r, &i, &mut attenuation, &mut scattered) {
-            return attenuation * ray_color(ray::new(scattered.o, scattered.dir), objects, depth-1)*0.5;
+        let mut attenuation = vec3(0.0, 0.0, 0.0);
+        if i.mat_ptr.scatter(&r, &i, &mut attenuation, &mut scattered) {
+            return ray_color(scattered, objects, depth-1)*0.5;
+        }
+        else {
+            return vec3(0f64, 0f64, 0f64);
         }
     }
 
@@ -55,7 +56,7 @@ pub fn write_color(pixel_color:vec3, sample_count:i64) -> vec3 {
     let g = (pixel_color.y * scale).sqrt();
     let b = (pixel_color.z * scale).sqrt();
 
-    return vec3(clamp(r, 0.0, 1.0)*256f64, clamp(g, 0.0, 1.0)*256f64, clamp(b, 0.0, 1.0)*256f64);
+    return vec3(clamp(r, 0.0, 0.999)*256f64, clamp(g, 0.0,0.999)*256f64, clamp(b, 0.0, 0.999)*256f64);
 }
 
 
@@ -72,19 +73,17 @@ fn main() {
     let mut imgbuf = image::ImageBuffer::new(imgx, imgy);
 
     // Material List
-    let material_ground = Rc::new(lambertian::new(vec3(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(lambertian::new(vec3(0.7, 0.3, 0.3)));
+    let material_ground = Rc::new(lambertian::new(0.8, 0.8, 0.0)); // why this b r g
+    let material_center = Rc::new(lambertian::new(0.7, 0.3, 0.3));
+    let material_left   = Rc::new(metal::new(0.8,0.8,0.8));
+    let material_right  = Rc::new(metal::new(0.2,0.8,0.6));
 
     // World
     let mut world = ShapeList::new();
-    world.push( Sphere{center:vec3(0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_ground.clone()} );
-    world.push( Sphere{center:vec3(-1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_ground.clone()} );
     world.push( Sphere{center:vec3(0f64, 100.5f64, -1f64), radius:100.0f64, mat_ptr:material_ground.clone()} );
-
-    let cloned = &*material_ground;
-
-    println!("{:?}", Rc::strong_count(&material_ground) );
-    println!("{:?}", Rc::weak_count(&material_ground) );
+    world.push( Sphere{center:vec3(0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_center.clone()} );
+    world.push( Sphere{center:vec3(-1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_left.clone()} );
+    world.push( Sphere{center:vec3( 1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_right.clone()} );
 
     // Camera
     let cam = Camera::new();

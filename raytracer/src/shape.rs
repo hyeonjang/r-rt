@@ -43,7 +43,8 @@ impl Shape for Sphere {
 
         h.t = root;
         h.pos = r.at(h.t);
-        h.norm = (h.pos - self.center)/self.radius;
+        let outward_normal = (h.pos - self.center)/self.radius;
+        h.set_face_normal(r, outward_normal);
         h.mat_ptr = Rc::clone(&self.mat_ptr);
         return true;
     }

@@ -8,13 +8,14 @@ use std::rc::Rc;
 use chrono::{Utc};
 
 // Custom crate
+use rxmath::vector::*;
+
+// Current crate
 pub mod intersect;
 pub mod shape;
 pub mod camera;
 pub mod sample;
 
-use rxmath::*;
-use rxmath::vector::*;
 use intersect::*;
 use shape::*;
 use camera::*;
@@ -37,26 +38,25 @@ pub fn ray_color(r:ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
         let mut scattered:ray = ray::default();
         let mut attenuation = vec3(0f64, 0f64, 0f64);
         if i.mat_ptr.scatter(&r, &i, &mut attenuation, &mut scattered) {
-            return ray_color(scattered, objects, depth-1)*0.5;
+            return attenuation*ray_color(scattered, objects, depth-1);
         }
         else {
             return vec3(0f64, 0f64, 0f64);
         }
     }
 
-    let unit_direction = r.dir.normalize();
+    let unit_direction = normalize(r.dir);
     let t = 0.5*(unit_direction.y + 1.0);
     return vec3(1.0, 1.0, 1.0)*(1.0-t) + vec3(0.5, 0.7, 1.0)*t;
 }
 
 pub fn write_color(pixel_color:vec3, sample_count:i64) -> vec3 {
     let scale = 1.0 / sample_count as f64;
-   
-    let r = (pixel_color.x * scale).sqrt();
-    let g = (pixel_color.y * scale).sqrt();
-    let b = (pixel_color.z * scale).sqrt();
 
-    return vec3(clamp(r, 0.0, 0.999)*256f64, clamp(g, 0.0,0.999)*256f64, clamp(b, 0.0, 0.999)*256f64);
+    let xyz = pixel_color*scale;
+    let rgb = vec3(sqrt(xyz.x), sqrt(xyz.y), sqrt(xyz.z));
+
+    return saturate_vec3(rgb)*256.0;
 }
 
 
@@ -66,7 +66,7 @@ fn main() {
     const ASPECT:f64 = 16.0/9.0;
     let imgx = 400;
     let imgy = (imgx as f64/ASPECT) as u32;
-    let sample_count = 16;
+    let sample_count = 64;
     const MAX_DEPTH:u32 = 50;
 
     // Create a new ImgBuf with width: imgx and height: imgy
@@ -74,9 +74,9 @@ fn main() {
 
     // Material List
     let material_ground = Rc::new(lambertian::new(0.8, 0.8, 0.0)); // why this b r g
-    let material_center = Rc::new(lambertian::new(0.1, 0.2, 0.5));
-    let material_left   = Rc::new(dielectric::new(1.5));
-    let material_right  = Rc::new(metal::new(vec3(0.2,0.8,0.6), 1.0));
+    let material_center = Rc::new(lambertian::new(0.7, 0.3, 0.3));
+    let material_left   = Rc::new(metal::new(vec3(0.8,0.8,0.8), 0.3));
+    let material_right  = Rc::new(metal::new(vec3(0.8,0.6,0.2), 1.0));
 
     // World
     let mut world = ShapeList::new();

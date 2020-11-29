@@ -96,7 +96,7 @@ impl_ops!(Gvec3<T>{ x y z });
 impl<T: Copy+std::ops::Mul<Output=T>+std::ops::Sub<Output=T>> std::ops::Mul<Gvec3<T>> for Gvec3<T>{
     type Output = Self;
     fn mul(self, rhs:Gvec3<T>) -> Self {
-        Gvec3::new( self.y*rhs.z-self.z*rhs.y, self.z*rhs.x-self.x*rhs.z, self.x*rhs.y-self.y*rhs.x )
+        Gvec3::new( self.x*rhs.x, self.y*rhs.y, self.z*rhs.z )
      }
 } 
 impl_ops!(Gvec4<T>{ x y z w });
@@ -110,8 +110,9 @@ pub trait VecOp<RHS=Self> {
     fn norm(&self) -> f64;
     fn length2(&self) -> f64;
     fn length(&self) -> f64;
-    fn dot(self, rhs:RHS) ->f64;
-    fn normalize(self) -> Self;
+    fn dot(&self, rhs:RHS) ->f64;
+    fn normalize(&self) -> Self;
+    fn near_zero(&self) -> bool;
 }
 // 2.1.1 Gvec2
 impl VecOp<Gvec2<f64>> for Gvec2<f64> {
@@ -128,11 +129,15 @@ impl VecOp<Gvec2<f64>> for Gvec2<f64> {
     #[inline] fn length(&self) -> f64 {
         self.length2().sqrt()
     }
-    #[inline] fn dot(self, v:Gvec2<f64>) -> f64 {
-        self.x.mul_add(v.x, self.y * v.y)
+    #[inline] fn dot(&self, rhs:Gvec2<f64>) -> f64 {
+        self.x.mul_add(rhs.x, self.y * rhs.y)
     }
-    #[inline] fn normalize(self) -> Self {
-        self/self.length()
+    #[inline] fn normalize(&self) -> Self {
+        *self/self.length()
+    }
+    #[inline] fn near_zero(&self) -> bool {
+        const S:f64 = 1e-8;
+        return (self.x.abs()<S) && (self.y.abs()<S)
     }
 }
 // 2.1.2 Gvec3
@@ -151,19 +156,22 @@ impl VecOp<Gvec3<f64>> for Gvec3<f64> {
     #[inline] fn length(&self) -> f64 {
         self.length2().sqrt()
     }
-    #[inline] fn dot(self,_v:Gvec3<f64>) -> f64 {
+    #[inline] fn dot(&self,_v:Gvec3<f64>) -> f64 {
         self.x.mul_add(_v.x, self.y.mul_add(_v.y, _v.z*self.z))
     }
-    #[inline] fn normalize(self) -> Self {
-        self/self.length()
+    #[inline] fn normalize(&self) -> Self {
+        *self/self.length()
+    }
+    #[inline] fn near_zero(&self) -> bool {
+        const S:f64 = 1e-8;
+        return (self.x.abs()<S) && (self.y.abs()<S) && (self.z.abs()<S)
     }
 }
 
 impl Gvec3<f64> {
-    pub fn near_zero(self) -> bool {
-        const S:f64 = 1e-8;
-        return (self.x.abs()<S) && (self.y.abs()<S) && (self.z.abs()<S)
-    }
+    #[inline] pub fn cross(&self, rhs:Gvec3<f64>) -> Self{
+        Gvec3::new( self.y*rhs.z-self.z*rhs.y, self.z*rhs.x-self.x*rhs.z, self.y*rhs.x-self.x*rhs.y)
+    } 
 }
 
 // 2.1.3 Gvec4
@@ -182,11 +190,15 @@ impl VecOp<Gvec4<f64>> for Gvec4<f64> {
     #[inline] fn length(&self) -> f64 {
         self.length2().sqrt()
     }
-    #[inline] fn dot(self,v:Gvec4<f64>) -> f64 {
+    #[inline] fn dot(&self,v:Gvec4<f64>) -> f64 {
         self.x.mul_add(v.x, self.y.mul_add(self.y, v.z.mul_add(self.z, v.w*self.w)))
     }
-    #[inline] fn normalize(self) -> Self {
-        self/self.length()
+    #[inline] fn normalize(&self) -> Self {
+        *self/self.length()
+    }
+    #[inline] fn near_zero(&self) -> bool {
+        const S:f64 = 1e-8;
+        return (self.x.abs()<S) && (self.y.abs()<S) && (self.z.abs()<S) && (self.w.abs()<S)
     }
 }
 
@@ -241,6 +253,14 @@ impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
     if x>max { return max; }
     return x;
 }
+#[inline] pub fn saturate(x:f64) -> f64 {
+    return clamp(x, 0.0, 1.0);
+}
+
+#[inline] pub fn saturate_vec3(v:vec3) -> vec3 {
+    return vec3(saturate(v.x), saturate(v.y), saturate(v.z));
+}
+
 #[inline] pub fn reflect(v:vec3, n:vec3) ->vec3 {
     return v - n*dot(v, n)*2.0;
 }

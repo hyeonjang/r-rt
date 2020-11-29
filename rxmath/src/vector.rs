@@ -81,6 +81,9 @@ impl_cmp!(Gvec3<T>{ x y z });
 impl_cmp!(Gvec4<T>{ x y z w });
 // 1.2. ops
 impl_ops!(Gvec2<T>{ x y });
+impl_ops!(Gvec3<T>{ x y z });
+impl_ops!(Gvec4<T>{ x y z w });
+
 impl<T> std::ops::Index<usize> for Gvec2<T> {
     type Output = T;
     fn index<'a>(&'a self, i:usize) -> &T {
@@ -91,20 +94,37 @@ impl<T> std::ops::Index<usize> for Gvec2<T> {
         }
     }
 }
-impl_ops!(Gvec3<T>{ x y z });
-// 1.2.1 cross product of Vector3 
-impl<T: Copy+std::ops::Mul<Output=T>+std::ops::Sub<Output=T>> std::ops::Mul<Gvec3<T>> for Gvec3<T>{
-    type Output = Self;
-    fn mul(self, rhs:Gvec3<T>) -> Self {
-        Gvec3::new( self.x*rhs.x, self.y*rhs.y, self.z*rhs.z )
-     }
-} 
-impl_ops!(Gvec4<T>{ x y z w });
+
+impl<T> std::ops::Index<usize> for Gvec3<T> {
+    type Output = T;
+    fn index<'a>(&'a self, i:usize) -> &T {
+        match i {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => &&self.x,
+        }
+    }
+}
+
+impl<T> std::ops::Index<usize> for Gvec4<T> {
+    type Output = T;
+    fn index<'a>(&'a self, i:usize) -> &T {
+        match i {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            3 => &self.w,
+            _ => &&self.x,
+        }
+    }
+}
 
 //////////////////////////////
 /// 2. Vector features
 // 2.1 Floating Point operation Methods Trait for Vectors
-pub trait VecOp<RHS=Self> {
+#[allow(non_camel_case_types)]
+pub trait vec<RHS=Self, T=f32+f64> {
     type Output;
     fn norm2(&self) -> f64;
     fn norm(&self) -> f64;
@@ -115,8 +135,7 @@ pub trait VecOp<RHS=Self> {
     fn near_zero(&self) -> bool;
 }
 // 2.1.1 Gvec2
-impl VecOp<Gvec2<f64>> for Gvec2<f64> {
-    type Output = f64;
+impl vec<Gvec2<f64>> for Gvec2<f64> {
     #[inline] fn norm2(&self) -> f64 {
         self.x.mul_add(self.x, self.y.clone()* self.y)
     }
@@ -141,7 +160,7 @@ impl VecOp<Gvec2<f64>> for Gvec2<f64> {
     }
 }
 // 2.1.2 Gvec3
-impl VecOp<Gvec3<f64>> for Gvec3<f64> {
+impl vec<Gvec3<f64>> for Gvec3<f64> {
     type Output = f64;
 
     #[inline] fn norm2(&self) -> f64 {
@@ -175,7 +194,7 @@ impl Gvec3<f64> {
 }
 
 // 2.1.3 Gvec4
-impl VecOp<Gvec4<f64>> for Gvec4<f64> {
+impl vec<Gvec4<f64>> for Gvec4<f64> {
     type Output = f64;
 
     #[inline] fn norm2(&self) -> f64 {

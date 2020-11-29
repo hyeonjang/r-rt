@@ -92,6 +92,12 @@ macro_rules!  impl_ops {
        
         // 1.  type vs type
         // 1.1 type vs type operations
+        impl<T: std::ops::Neg<Output=T>> std::ops::Neg for $type {
+            type Output = $type;
+            fn neg(self) -> $type {
+                <$type>::new($(-self.$field,)+)
+            }
+        }
         impl<T: std::ops::Add<Output=T>> std::ops::Add<$type> for $type {
             type Output = $type;
             fn add(self, rhs: $type) -> $type {
@@ -104,12 +110,12 @@ macro_rules!  impl_ops {
                 <$type>::new($(self.$field-rhs.$field,)+)
             }
         }
-        impl<T: std::ops::Neg<Output=T>> std::ops::Neg for $type {
+        impl<T: std::ops::Mul<Output=T>> std::ops::Mul<$type> for $type {
             type Output = $type;
-            fn neg(self) -> $type {
-                <$type>::new($(-self.$field,)+)
-            }
-        }
+            fn mul(self, rhs:$type) -> $type {
+                <$type>::new($(self.$field*rhs.$field,)+)
+             }
+        } 
         // 1.2 type vs type assignment operations
         impl<T: Copy + std::ops::Add<Output=T>> std::ops::AddAssign for $type {
             fn add_assign(&mut self, other:Self) {
@@ -123,9 +129,4 @@ macro_rules!  impl_ops {
         }
     };
 }
-
-
-
-
-
 

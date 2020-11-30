@@ -146,14 +146,14 @@ impl material for dielectric {
         *attenuation = vec3(1.0, 1.0, 1.0);
         let refraction_ratio = { if h.front { 1.0/self.ir } else { self.ir } };
 
-        let unit_direction = r.dir;
+        let unit_direction = normalize(r.dir);
         let cos_theta = dot(-unit_direction, h.norm).min(1.0);
         let sin_theta = sqrt(1.0-cos_theta*cos_theta);
 
         let cannot_refract = refraction_ratio*sin_theta > 1.0;
         let direction:vec3;
 
-        if cannot_refract {
+        if cannot_refract || dielectric::reflectance(cos_theta, refraction_ratio) > random_f64() {
             direction = reflect(unit_direction, h.norm);
         }
         else {
@@ -162,5 +162,13 @@ impl material for dielectric {
 
         *scattered = ray::new(h.pos, direction);
         return true;
+    }
+}
+
+impl dielectric {
+    pub fn reflectance(cosine:f64, ref_idx:f64) -> f64{
+        let r0 = (1.0-ref_idx)/(1.0+ref_idx);
+        let r1 = r0*r0;
+        return r1 + (1.0-r1)*(1.0-cosine).powi(5);
     }
 }

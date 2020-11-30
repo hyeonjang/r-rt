@@ -66,31 +66,33 @@ fn main() {
     const ASPECT:f64 = 16.0/9.0;
     let imgx = 400;
     let imgy = (imgx as f64/ASPECT) as u32;
-    let sample_count = 64;
-    const MAX_DEPTH:u32 = 50;
+    let sample_count = 1;
+    const MAX_DEPTH:u32 = 5;
 
     // Create a new ImgBuf with width: imgx and height: imgy
     let mut imgbuf = image::ImageBuffer::new(imgx, imgy);
 
     // Material List
-    let material_ground = Rc::new(lambertian::new(0.8, 0.8, 0.0)); // why this b r g
-    let material_center = Rc::new(lambertian::new(0.7, 0.3, 0.3));
-    let material_left   = Rc::new(metal::new(vec3(0.8,0.8,0.8), 0.3));
-    let material_right  = Rc::new(metal::new(vec3(0.8,0.6,0.2), 1.0));
+    let material_ground = Rc::new(lambertian::new(0.8, 0.8, 0.0));
+    let material_center = Rc::new(lambertian::new(0.1, 0.2, 0.5));
+    let material_left   = Rc::new(dielectric::new(1.5));
+    let material_right  = Rc::new(metal::new(vec3(0.8,0.6,0.2), 0.0));
 
     // World
     let mut world = ShapeList::new();
     world.push( Sphere{center:vec3(0f64, 100.5f64, -1f64), radius:100.0f64, mat_ptr:material_ground.clone()} );
     world.push( Sphere{center:vec3(0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_center.clone()} );
     world.push( Sphere{center:vec3(-1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_left.clone()} );
+    world.push( Sphere{center:vec3(-1.0f64, 0f64, -1f64), radius:-0.4f64, mat_ptr:material_left.clone()} );
     world.push( Sphere{center:vec3( 1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_right.clone()} );
 
     // Camera
-    let cam = Camera::new();
+    let cam = Camera::new(vec3(-2.0, 2.0, 1.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0), 90.0, ASPECT);
  
     // Ray Trace!
     let start = Instant::now();
-    for y in 0..imgy { 
+    for y in 0..imgy {
+        //print!("[{}]{}", NAME, y);
         for x in 0..imgx {
             let mut pixel_color = vec3(0.0, 0.0, 0.0);
             for _i in 0..sample_count {

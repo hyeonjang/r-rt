@@ -10,21 +10,25 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Self {
-        let aspect_ratio = 16.0/9.0;
-        let viewport_height = 2.0;
+    pub fn new(lookfrom:vec3, lookat:vec3, vup:vec3, vfov:f64, aspect_ratio:f64) -> Self {
+        let theta = vfov * 3.14 / 180.0;
+        let h = (theta/2.0).tan();
+        let viewport_height = 2.0 * h;
         let viewport_width = aspect_ratio * viewport_height;
-        let focal_length = 1.0;
 
-        let _origin = vec3(0.0, 0.0, 0.0);
-        let _horizontal = vec3(viewport_width, 0.0, 0.0);
-        let _vertical = vec3(0.0, viewport_height, 0.0);
-        let _lower_left_corner = _origin - _horizontal/2.0 - _vertical/2.0 - vec3(0.0, 0.0, focal_length);
+        let w = normalize(lookfrom-lookat);
+        let u = normalize(cross(vup, w));
+        let v = cross(w, u);
+
+        let _origin = lookfrom;
+        let _horizontal = u*viewport_width;
+        let _vertical = v*viewport_height;
+        let _lower_left_corner = _origin.clone() - _horizontal.clone()/2.0 - _vertical.clone()/2.0 - w.clone().clone();
    
         Camera{ origin:_origin, horizontal:_horizontal, vertical:_vertical, lower_left_corner:_lower_left_corner, }
     }
 
-    pub fn get_ray(self, u:f64, v:f64) -> ray{
-        return ray{o:self.origin, dir:(self.lower_left_corner+self.horizontal*u+self.vertical*v-self.origin)}
+    pub fn get_ray(self, s:f64, t:f64) -> ray{
+        return ray{o:self.origin, dir:(self.lower_left_corner+self.horizontal*s+self.vertical*t-self.origin)}
     }
 }

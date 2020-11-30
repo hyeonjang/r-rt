@@ -31,8 +31,8 @@
     ($t:ident, 8) => { std::$t::consts::FRAC_PI_8 };
 }
 
-#[inline] pub fn degrees_to_radians(degrees:f64) {
-    degrees * PI!(f64) / 180.0;
+#[inline] pub fn degrees_to_radians(degrees:f64) -> f64 {
+    degrees * PI!(f64) / 180.0
 }
 
 #[macro_use]

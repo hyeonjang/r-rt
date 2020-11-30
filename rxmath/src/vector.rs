@@ -124,7 +124,7 @@ impl<T> std::ops::Index<usize> for Gvec4<T> {
 /// 2. Vector features
 // 2.1 Floating Point operation Methods Trait for Vectors
 #[allow(non_camel_case_types)]
-pub trait vec<RHS=Self, T=f32+f64> {
+pub trait vec<RHS=Self> {
     type Output;
     fn norm2(&self) -> f64;
     fn norm(&self) -> f64;
@@ -136,6 +136,8 @@ pub trait vec<RHS=Self, T=f32+f64> {
 }
 // 2.1.1 Gvec2
 impl vec<Gvec2<f64>> for Gvec2<f64> {
+    type Output = f64;
+
     #[inline] fn norm2(&self) -> f64 {
         self.x.mul_add(self.x, self.y.clone()* self.y)
     }
@@ -189,7 +191,7 @@ impl vec<Gvec3<f64>> for Gvec3<f64> {
 
 impl Gvec3<f64> {
     #[inline] pub fn cross(&self, rhs:Gvec3<f64>) -> Self{
-        Gvec3::new( self.y*rhs.z-self.z*rhs.y, self.z*rhs.x-self.x*rhs.z, self.y*rhs.x-self.x*rhs.y)
+        Gvec3::new( self.y*rhs.z-self.z*rhs.y, self.z*rhs.x-self.x*rhs.z, self.x*rhs.y-self.y*rhs.x)
     } 
 }
 
@@ -261,30 +263,31 @@ impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
 #[inline] pub fn dot( v0:vec3, v1:vec3 ) -> f64 {
     v0.dot(v1)
 }
+#[inline] pub fn cross( v0:vec3, v1:vec3 ) -> vec3 {
+    v0.cross(v1)
+}
 #[inline] pub fn normalize( v:vec3 ) -> vec3 {
     v.normalize()
 }
 #[inline] pub fn sqrt(f:f64) -> f64 {
     f.sqrt()
 } 
-#[inline] pub fn clamp(x:f64, min:f64, max:f64) -> f64 {
+#[inline] pub fn clamp( x:f64, min:f64, max:f64 ) -> f64 {
     if x<min { return min; } 
     if x>max { return max; }
     return x;
 }
-#[inline] pub fn saturate(x:f64) -> f64 {
+#[inline] pub fn saturate( x:f64 ) -> f64 {
     return clamp(x, 0.0, 1.0);
 }
-
-#[inline] pub fn saturate_vec3(v:vec3) -> vec3 {
+#[inline] pub fn saturate_vec3( v:vec3 ) -> vec3 {
     return vec3(saturate(v.x), saturate(v.y), saturate(v.z));
 }
-
-#[inline] pub fn reflect(v:vec3, n:vec3) ->vec3 {
+#[inline] pub fn reflect( v:vec3, n:vec3 ) ->vec3 {
     return v - n*dot(v, n)*2.0;
 }
-#[inline] pub fn refract(uv:vec3, n:vec3, etai_over_etat:f64) -> vec3 {
-    let cos_theta = dot(uv, n).min(1.0);
+#[inline] pub fn refract( uv:vec3, n:vec3, etai_over_etat:f64 ) -> vec3 {
+    let cos_theta = dot(-uv, n).min(1.0);
     let r_perp = (uv+n*cos_theta)*etai_over_etat;
     let r_para = n * (-sqrt((1.0-r_perp.length2()).abs()));
     return r_perp + r_para;

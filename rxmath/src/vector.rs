@@ -264,7 +264,7 @@ impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
     v0.dot(v1)
 }
 #[inline] pub fn cross( v0:vec3, v1:vec3 ) -> vec3 {
-    v0.cross(v1)
+    v1.cross(v0)
 }
 #[inline] pub fn normalize( v:vec3 ) -> vec3 {
     v.normalize()

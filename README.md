@@ -5,4 +5,4 @@ https://raytracing.github.io/
 
 Daily Result
 ===
-![result](./result/2020-11-30.png)
+![result](./result/2020-12-01.png)

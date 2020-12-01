@@ -6,6 +6,7 @@ use std::rc::Rc;
 
 // External create
 use chrono::{Utc};
+use indicatif::{ProgressBar, ProgressStyle};
 
 // Custom crate
 use rxmath::vector::*;
@@ -54,7 +55,7 @@ pub fn write_color(pixel_color:vec3, sample_count:i64) -> vec3 {
     let scale = 1.0 / sample_count as f64;
 
     let xyz = pixel_color*scale;
-    let rgb = vec3(sqrt(xyz.x), sqrt(xyz.y), sqrt(xyz.z));
+    let rgb = vec3(f64::sqrt(xyz.x), f64::sqrt(xyz.y), f64::sqrt(xyz.z));
 
     return saturate_vec3(rgb)*256.0;
 }
@@ -64,13 +65,13 @@ fn main() {
 
     // Image
     const ASPECT:f64 = 16.0/9.0;
-    let imgx = 400;
-    let imgy = (imgx as f64/ASPECT) as u32;
+    let imgx:u64 = 400;
+    let imgy:u64 = (imgx as f64/ASPECT) as u64;
     let sample_count = 1;
-    const MAX_DEPTH:u32 = 5;
+    const MAX_DEPTH:u64 = 5;
 
     // Create a new ImgBuf with width: imgx and height: imgy
-    let mut imgbuf = image::ImageBuffer::new(imgx, imgy);
+    let mut imgbuf = image::ImageBuffer::new(imgx as u32, imgy as u32);
 
     // Material List
     let material_ground = Rc::new(lambertian::new(0.8, 0.8, 0.0));
@@ -91,23 +92,28 @@ fn main() {
  
     // Ray Trace!
     let start = Instant::now();
+    let pb = ProgressBar::new(imgy);
+    pb.set_style(ProgressStyle::default_bar()
+    .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] ({eta})")
+    .progress_chars("#>-"));
     for y in 0..imgy {
-        //print!("[{}]{}", NAME, y);
+        pb.inc(1);
         for x in 0..imgx {
             let mut pixel_color = vec3(0.0, 0.0, 0.0);
-            for _i in 0..sample_count {
+            for _ in 0..sample_count {
                 let u  = (x as f64 + random_f64())/(imgx-1) as f64;
                 let v  = (y as f64 + random_f64())/(imgy-1) as f64;        
                 let r : ray = cam.get_ray(u, v);
-                pixel_color += ray_color(r, &mut world, MAX_DEPTH);
+                pixel_color += ray_color(r, &mut world, MAX_DEPTH as u32);
             }
             let rgb = write_color(pixel_color, sample_count);
-            let pixel = imgbuf.get_pixel_mut(x, y);
+            let pixel = imgbuf.get_pixel_mut(x as u32, y as u32);
             *pixel = image::Rgb([rgb.x as u8, rgb.y as u8, rgb.z as u8]);
         }
     }
+    pb.finish_and_clear();
     let duration = start.elapsed();
-    println!("[{}]time duration:{:?}", NAME, duration);
+    println!("[{}]Time duration:{:?}", NAME, duration);
 
     let current_dir = std::env::current_dir().unwrap().to_str().unwrap().to_owned();
     let path = format!("{}/result/{}.png", current_dir, get_date());

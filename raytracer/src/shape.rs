@@ -31,7 +31,7 @@ impl Shape for Sphere {
         
         let discriminant = b*b - a*c;
         if discriminant<0f64 { return false;}  
-        let sqrtd = sqrt(discriminant);
+        let sqrtd = f64::sqrt(discriminant);
 
         let mut root = (-b-sqrtd)/a;
         if root<t_min || t_max<root {
@@ -147,8 +147,8 @@ impl material for dielectric {
         let refraction_ratio = { if h.front { 1.0/self.ir } else { self.ir } };
 
         let unit_direction = normalize(r.dir);
-        let cos_theta = dot(-unit_direction, h.norm).min(1.0);
-        let sin_theta = sqrt(1.0-cos_theta*cos_theta);
+        let cos_theta = f64::min(dot(-unit_direction, h.norm), 1.0);
+        let sin_theta = f64::sqrt(1.0-cos_theta*cos_theta);
 
         let cannot_refract = refraction_ratio*sin_theta > 1.0;
         let direction:vec3;
@@ -169,6 +169,6 @@ impl dielectric {
     pub fn reflectance(cosine:f64, ref_idx:f64) -> f64{
         let r0 = (1.0-ref_idx)/(1.0+ref_idx);
         let r1 = r0*r0;
-        return r1 + (1.0-r1)*(1.0-cosine).powi(5);
+        return r1 + (1.0-r1)*f64::powi(1.0-cosine, 5);
     }
 }

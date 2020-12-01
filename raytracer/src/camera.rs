@@ -17,20 +17,15 @@ impl Camera {
         let viewport_width = aspect_ratio * viewport_height;
 
         let w = normalize(lookfrom-lookat);
-        let u = normalize(vec3::cross(&w, vup));
-        let v = vec3::cross(&u, w);
-
-        println!("{:?}\n{:?}\n{:?}\n", lookfrom, lookat, vup);
-        println!("{:?}\n{:?}\n{:?}\n", w, u, v);
+        let u = normalize(cross(w, vup));
+        let v = cross(u, w);
 
         let _origin = lookfrom;
         let _horizontal = u*viewport_width;//u*viewport_width;
         let _vertical = v*viewport_height;//v*viewport_height;
-        let _lower_left_corner = _origin - _horizontal - _vertical - w;
+        let _lower_left_corner = _origin - _horizontal/2.0 - _vertical/2.0 - w;
         
-        println!("{:?}\n{:?}\n{:?}\n{:?}\n", _origin, _horizontal, _vertical, _lower_left_corner);
-
-        Camera{ origin:_origin, horizontal:_horizontal, vertical:_vertical, lower_left_corner:_lower_left_corner, }
+        return Camera{ origin:_origin, horizontal:_horizontal, vertical:_vertical, lower_left_corner:_lower_left_corner, }
     }
 
     pub fn get_ray(self, s:f64, t:f64) -> ray{

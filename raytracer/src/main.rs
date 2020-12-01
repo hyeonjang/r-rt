@@ -26,24 +26,21 @@ use sample::*;
 static NAME:&'static str = "ray-tracer";
 pub fn get_date()->String{ return Utc::now().format("%Y-%m-%d").to_string(); }
 
-pub fn ray_color(r:ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
+pub fn ray_color(r:&ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
     let mut i:hit = hit::default();
-    let t_min = 0.001f64;
-    let t_max = f64::MAX;
 
     if depth <= 0 {
         return vec3(0f64, 0f64, 0f64);
     }
 
-    if objects.hit(&r, t_min, t_max, &mut i) { 
+    if objects.hit(&r, 0.001, f64::MAX, &mut i) { 
         let mut scattered:ray = ray::default();
         let mut attenuation = vec3(0f64, 0f64, 0f64);
         if i.mat_ptr.scatter(&r, &i, &mut attenuation, &mut scattered) {
-            return attenuation*ray_color(scattered, objects, depth-1);
+            //println!("{}", attenuation);
+            return attenuation*ray_color(&scattered, objects, depth-1);
         }
-        else {
-            return vec3(0f64, 0f64, 0f64);
-        }
+        return vec3(0f64, 0f64, 0f64);
     }
 
     let unit_direction = normalize(r.dir);
@@ -65,10 +62,10 @@ fn main() {
 
     // Image
     const ASPECT:f64 = 16.0/9.0;
-    let imgx:u64 = 400;
-    let imgy:u64 = (imgx as f64/ASPECT) as u64;
-    let sample_count = 1;
-    const MAX_DEPTH:u64 = 5;
+    let imgx = 400;
+    let imgy = (imgx as f64/ASPECT) as u32;
+    let sample_count = 64;
+    const MAX_DEPTH:u32= 32;
 
     // Create a new ImgBuf with width: imgx and height: imgy
     let mut imgbuf = image::ImageBuffer::new(imgx as u32, imgy as u32);
@@ -88,11 +85,12 @@ fn main() {
     world.push( Sphere{center:vec3( 1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_right.clone()} );
 
     // Camera
-    let cam = Camera::new(vec3(-2.0, 2.0, 1.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0), 90.0, ASPECT);
- 
+    let cam = Camera::new(vec3(-2.0, -2.0, 1.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0), 20.0, ASPECT);
+    // ** upside downed why
+
     // Ray Trace!
     let start = Instant::now();
-    let pb = ProgressBar::new(imgy);
+    let pb = ProgressBar::new(imgy as u64);
     pb.set_style(ProgressStyle::default_bar()
     .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] ({eta})")
     .progress_chars("#>-"));
@@ -104,14 +102,14 @@ fn main() {
                 let u  = (x as f64 + random_f64())/(imgx-1) as f64;
                 let v  = (y as f64 + random_f64())/(imgy-1) as f64;        
                 let r : ray = cam.get_ray(u, v);
-                pixel_color += ray_color(r, &mut world, MAX_DEPTH as u32);
+                pixel_color += ray_color(&r, &mut world, MAX_DEPTH as u32);
             }
             let rgb = write_color(pixel_color, sample_count);
             let pixel = imgbuf.get_pixel_mut(x as u32, y as u32);
             *pixel = image::Rgb([rgb.x as u8, rgb.y as u8, rgb.z as u8]);
         }
     }
-    pb.finish_and_clear();
+    pb.finish();
     let duration = start.elapsed();
     println!("[{}]Time duration:{:?}", NAME, duration);
 

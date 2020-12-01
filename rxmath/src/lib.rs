@@ -71,8 +71,8 @@ mod tests {
         // 0.2.1 vector cross product test
         let v_c0 = vec3(2_f64, 3_f64, 4_f64);
         let v_c1 = vec3(1_f64, 2_f64, 3_f64);
-        let v_l = v_c0.cross(v_c1); 
-        let v_r = -v_c1.cross(v_c0);
+        let v_l = cross(v_c0, v_c1); 
+        let v_r = cross(-v_c1, v_c0);
         assert_eq!(v_l, v_r);
 
         // 0.3 vector functions tests

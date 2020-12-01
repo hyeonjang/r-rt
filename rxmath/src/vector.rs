@@ -269,9 +269,6 @@ impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
 #[inline] pub fn normalize( v:vec3 ) -> vec3 {
     v.normalize()
 }
-#[inline] pub fn sqrt(f:f64) -> f64 {
-    f.sqrt()
-} 
 #[inline] pub fn clamp( x:f64, min:f64, max:f64 ) -> f64 {
     if x<min { return min; } 
     if x>max { return max; }
@@ -289,6 +286,6 @@ impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
 #[inline] pub fn refract( uv:vec3, n:vec3, etai_over_etat:f64 ) -> vec3 {
     let cos_theta = dot(-uv, n).min(1.0);
     let r_perp = (uv+n*cos_theta)*etai_over_etat;
-    let r_para = n * (-sqrt((1.0-r_perp.length2()).abs()));
+    let r_para = n * (-f64::sqrt((1.0-r_perp.length2()).abs()));
     return r_perp + r_para;
 }

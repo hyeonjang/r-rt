@@ -24,6 +24,7 @@ use sample::*;
 
 // static variables
 static NAME:&'static str = "ray-tracer";
+static STYLE:&'static str = "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] ({eta})";
 pub fn get_date()->String{ return Utc::now().format("%Y-%m-%d").to_string(); }
 
 pub fn ray_color(r:&ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
@@ -91,9 +92,7 @@ fn main() {
     // Ray Trace!
     let start = Instant::now();
     let pb = ProgressBar::new(imgy as u64);
-    pb.set_style(ProgressStyle::default_bar()
-    .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] ({eta})")
-    .progress_chars("#>-"));
+    pb.set_style(ProgressStyle::default_bar().template(STYLE));
     for y in 0..imgy {
         pb.inc(1);
         for x in 0..imgx {
@@ -111,7 +110,7 @@ fn main() {
     }
     pb.finish();
     let duration = start.elapsed();
-    println!("[{}]Time duration:{:?}", NAME, duration);
+    println!("[{}] time duration:{:?}", NAME, duration);
 
     let current_dir = std::env::current_dir().unwrap().to_str().unwrap().to_owned();
     let path = format!("{}/result/{}.png", current_dir, get_date());

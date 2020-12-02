@@ -46,3 +46,11 @@ pub fn random_hemisphere(normal:vec3) -> vec3 {
         return -unit_sphere;
     }
 }
+
+pub fn random_unit_disk() -> vec3 {
+    loop {
+        let p = vec3(random_f64(), random_f64(), 0.0);
+        if p.length2() >= 1.0 { continue; }
+        return p;
+    }
+}

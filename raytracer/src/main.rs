@@ -86,7 +86,13 @@ fn main() {
     world.push( Sphere{center:vec3( 1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_right.clone()} );
 
     // Camera
-    let cam = Camera::new(vec3(-2.0, -2.0, 1.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0), 20.0, ASPECT);
+    let lookfrom = vec3(3.0, -3.0, 2.0);
+    let lookat = vec3(0.0, 0.0, -1.0);
+    let vup = vec3(0.0, 1.0, 0.0);
+    let dist_to_focus = (lookfrom-lookat).length();
+    let aperture = 2.0;
+
+    let cam = Camera::new(lookfrom, lookat, vup, 20.0, ASPECT, aperture, dist_to_focus);
     // ** upside downed why
 
     // Ray Trace!

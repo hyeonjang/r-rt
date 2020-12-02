@@ -62,13 +62,13 @@ pub fn write_color(pixel_color:vec3, sample_count:i64) -> vec3 {
 pub fn random_scene() -> ShapeList<Sphere> {
     let mut world = ShapeList::new();
 
-    let ground_material = Rc::new(lambertian::new(0.5, 0.5, 0.5));
+    let ground_material = Rc::new(lambertian::new(vec3(0.5, 0.5, 0.5)));
     world.push( Sphere{center:vec3(0f64, 1000f64, 0f64), radius:1000.0f64, mat_ptr:ground_material} );
 
     for a in -11..11 {
         for b in -11..11 {
             let choose_mat = random_f64();
-            let center = vec3(a as f64 + 0.9*random_f64(), 0.2, b as f64 + 0.9*random_f64());
+            let center = vec3(a as f64 + 0.9*random_f64(), -0.2, b as f64 + 0.9*random_f64());
         
             if (center - vec3(4.0, 0.2, 0.0)).length() > 0.9 {
                 let sphere_material:Rc<dyn material>;
@@ -76,11 +76,32 @@ pub fn random_scene() -> ShapeList<Sphere> {
                 if choose_mat < 0.8 {
                     // diffuse
                     let albedo = vec3::random() * vec3::random();
+                    sphere_material = Rc::new(lambertian::new(albedo));
+                    world.push(Sphere{center:center, radius:0.2, mat_ptr:sphere_material});
+                }
+                else if choose_mat < 0.95 {
+                    let albedo = vec3::random_range(0.5, 1.0);
+                    let fuzz = random_range_f64(0.0, 0.5);
+                    sphere_material = Rc::new(metal::new(albedo, fuzz));
+                    world.push(Sphere::new(center, 0.2, sphere_material));
+                }
+                else {
+                    sphere_material = Rc::new(dielectric::new(1.5));
+                    world.push(Sphere::new(center, 0.2, sphere_material));
                 }
 
             }
         }
     }
+
+    let material1 = Rc::new(dielectric::new(1.5));
+    world.push(Sphere::new(vec3(0.0, -1.0, 0.0), 1.0, material1));
+
+    let material2 = Rc::new(lambertian::new(vec3(0.4, 0.2, 0.1)));
+    world.push(Sphere::new(vec3(-4.0, -1.0, 0.1), 1.0, material2));
+
+    let material3 = Rc::new(metal::new(vec3(0.7, 0.6, 0.5), 0.0));
+    world.push(Sphere::new(vec3( 4.0, -1.0, 0.0), 1.0, material3));
 
     return world;
 }
@@ -88,35 +109,26 @@ pub fn random_scene() -> ShapeList<Sphere> {
 fn main() {
 
     // Image
-    const ASPECT:f64 = 16.0/9.0;
+    const ASPECT:f64 = 3.0/2.0;
     let imgx = 400;
     let imgy = (imgx as f64/ASPECT) as u32;
     let sample_count = 64;
-    const MAX_DEPTH:u32= 32;
+    const MAX_DEPTH:u32= 50;
 
     // Create a new ImgBuf with width: imgx and height: imgy
     let mut imgbuf = image::ImageBuffer::new(imgx as u32, imgy as u32);
 
     // Material List
-    let material_ground = Rc::new(lambertian::new(0.8, 0.8, 0.0));
-    let material_center = Rc::new(lambertian::new(0.1, 0.2, 0.5));
-    let material_left   = Rc::new(dielectric::new(1.5));
-    let material_right  = Rc::new(metal::new(vec3(0.8,0.6,0.2), 0.0));
 
     // World
-    let mut world = ShapeList::new();
-    world.push( Sphere{center:vec3(0f64, 100.5f64, -1f64), radius:100.0f64, mat_ptr:material_ground.clone()} );
-    world.push( Sphere{center:vec3(0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_center.clone()} );
-    world.push( Sphere{center:vec3(-1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_left.clone()} );
-    world.push( Sphere{center:vec3(-1.0f64, 0f64, -1f64), radius:-0.4f64, mat_ptr:material_left.clone()} );
-    world.push( Sphere{center:vec3( 1.0f64, 0f64, -1f64), radius:0.5f64, mat_ptr:material_right.clone()} );
+    let mut world = random_scene();
 
     // Camera
-    let lookfrom = vec3(3.0, -3.0, 2.0);
-    let lookat = vec3(0.0, 0.0, -1.0);
+    let lookfrom = vec3(13.0, -2.0, 3.0);
+    let lookat = vec3(0.0, 0.0, 0.0);
     let vup = vec3(0.0, 1.0, 0.0);
-    let dist_to_focus = (lookfrom-lookat).length();
-    let aperture = 2.0;
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
 
     let cam = Camera::new(lookfrom, lookat, vup, 20.0, ASPECT, aperture, dist_to_focus);
     // ** upside downed why

@@ -22,6 +22,12 @@ pub struct Sphere {
     pub mat_ptr : Rc<dyn material>,
 }
 
+impl Sphere {
+    pub fn new(center:vec3, radius:f64, mat_ptr:Rc<dyn material>) -> Self {
+        Sphere { center:center, radius:radius, mat_ptr:mat_ptr }
+    }
+}
+
 impl Shape for Sphere {
     fn intersect( &self, r:&ray, t_min:f64, t_max:f64, h:&mut hit ) -> bool {
         // the simplified version
@@ -102,8 +108,8 @@ pub struct dielectric {
 }
 
 impl lambertian {
-    pub fn new(x:f64, y:f64, z:f64)->lambertian {
-        lambertian{ albedo:vec3(x, y, z) }
+    pub fn new(v:vec3)->lambertian {
+        lambertian{ albedo:v }
     }
 }
 

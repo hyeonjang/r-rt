@@ -2,8 +2,8 @@ Rust ray-tracer
 ===
 Reference
 ---
-[Ray Tracing in One Weekend by Peter Shirley] (https://raytracing.github.io/)
+[_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 
 Daily Result
 ---
-![result](./result/2020-12-01.png)
+![result](./result/2020-12-02.png)

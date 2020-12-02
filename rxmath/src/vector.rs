@@ -14,7 +14,7 @@
 // limitations under the License.
 //*********************************************************
 
-extern crate libc;
+use crate::random::*;
 //////////////////////////////
 /// 0. tupled array sturctures 
 pub struct Garr2<T>(pub T, pub T);
@@ -193,6 +193,12 @@ impl Gvec3<f64> {
     #[inline] pub fn cross(&self, rhs:Gvec3<f64>) -> Self{
         Gvec3::new( self.y*rhs.z-self.z*rhs.y, self.z*rhs.x-self.x*rhs.z, self.x*rhs.y-self.y*rhs.x)
     } 
+    #[inline] pub fn random() -> Self {
+        vec3(random_f64(), random_f64(), random_f64())
+    }
+    #[inline] pub fn random_range(x:f64, y:f64) -> Self {
+        vec3(random_range_f64(x, y), random_range_f64(x, y), random_range_f64(x, y))
+    }
 }
 
 // 2.1.3 Gvec4

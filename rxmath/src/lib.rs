@@ -39,6 +39,7 @@
 pub mod macros;
 pub mod vector;
 pub mod matrix;
+pub mod random;
 
 #[cfg(test)]
 #[allow(unused_imports)]

@@ -10,6 +10,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 
 // Custom crate
 use rxmath::vector::*;
+use rxmath::random::*;
 
 // Current crate
 pub mod intersect;
@@ -58,6 +59,31 @@ pub fn write_color(pixel_color:vec3, sample_count:i64) -> vec3 {
     return saturate_vec3(rgb)*256.0;
 }
 
+pub fn random_scene() -> ShapeList<Sphere> {
+    let mut world = ShapeList::new();
+
+    let ground_material = Rc::new(lambertian::new(0.5, 0.5, 0.5));
+    world.push( Sphere{center:vec3(0f64, 1000f64, 0f64), radius:1000.0f64, mat_ptr:ground_material} );
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = random_f64();
+            let center = vec3(a as f64 + 0.9*random_f64(), 0.2, b as f64 + 0.9*random_f64());
+        
+            if (center - vec3(4.0, 0.2, 0.0)).length() > 0.9 {
+                let sphere_material:Rc<dyn material>;
+
+                if choose_mat < 0.8 {
+                    // diffuse
+                    let albedo = vec3::random() * vec3::random();
+                }
+
+            }
+        }
+    }
+
+    return world;
+}
 
 fn main() {
 

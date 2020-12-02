@@ -3,6 +3,7 @@ use std::rc::Rc;
 
 // Custom crate
 use rxmath::vector::*;
+use rxmath::random::*;
 
 use crate::intersect::*;
 use crate::sample::*;

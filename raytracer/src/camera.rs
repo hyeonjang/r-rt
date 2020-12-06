@@ -9,7 +9,7 @@ pub struct Camera {
     lower_left_corner : vec3,
     horizontal : vec3,
     vertical : vec3,
-    u:vec3, v:vec3, w:vec3,
+    w:vec3, u:vec3, v:vec3,
     lens_radius:f64,
 }
 
@@ -31,7 +31,7 @@ impl Camera {
         
         let lens_radius = apeture/2.0;
 
-        return Camera{ origin:origin, horizontal:horizontal, vertical:vertical, lower_left_corner:lower_left_corner, w:w, u:u, v:v, lens_radius:lens_radius}
+        return Camera{ origin:origin, horizontal:horizontal, vertical:vertical, lower_left_corner:lower_left_corner, w:w, u:u, v:v, lens_radius:lens_radius }
     }
 
     pub fn get_ray(&self, s:f64, t:f64) -> ray{

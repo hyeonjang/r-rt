@@ -1,4 +1,4 @@
-Rust ray-tracer
+Rust raytracer
 ===
 Reference
 ---

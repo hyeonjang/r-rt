@@ -21,7 +21,6 @@ pub mod sample;
 use intersect::*;
 use shape::*;
 use camera::*;
-use sample::*;
 
 // static variables
 static NAME:&'static str = "ray-tracer";
@@ -50,7 +49,7 @@ pub fn ray_color(r:&ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
     return vec3(1.0, 1.0, 1.0)*(1.0-t) + vec3(0.5, 0.7, 1.0)*t;
 }
 
-pub fn write_color(pixel_color:vec3, sample_count:i64) -> vec3 {
+pub fn write_color(pixel_color:vec3, sample_count:u64) -> vec3 {
     let scale = 1.0 / sample_count as f64;
 
     let xyz = pixel_color*scale;
@@ -109,11 +108,11 @@ pub fn random_scene() -> ShapeList<Sphere> {
 fn main() {
 
     // Image
-    const ASPECT:f64 = 3.0/2.0;
-    let imgx = 400;
-    let imgy = (imgx as f64/ASPECT) as u32;
-    let sample_count = 64;
-    const MAX_DEPTH:u32= 50;
+    let aspect_ratio:f64 = 3.0/2.0;
+    let imgx:u32 = 400;
+    let imgy:u32 = (imgx as f64/aspect_ratio) as u32;
+    let sample_count:u64 = 64;
+    let max_depth:u64= 50;
 
     // Create a new ImgBuf with width: imgx and height: imgy
     let mut imgbuf = image::ImageBuffer::new(imgx as u32, imgy as u32);
@@ -130,22 +129,22 @@ fn main() {
     let dist_to_focus = 10.0;
     let aperture = 0.1;
 
-    let cam = Camera::new(lookfrom, lookat, vup, 20.0, ASPECT, aperture, dist_to_focus);
+    let cam = Camera::new(lookfrom, lookat, vup, 20.0, aspect_ratio, aperture, dist_to_focus);
     // ** upside downed why
 
     // Ray Trace!
     let start = Instant::now();
-    let pb = ProgressBar::new(imgy as u64);
+    let pb = ProgressBar::new(((imgx*imgy) as u64)*sample_count);
     pb.set_style(ProgressStyle::default_bar().template(STYLE));
     for y in 0..imgy {
-        pb.inc(1);
         for x in 0..imgx {
             let mut pixel_color = vec3(0.0, 0.0, 0.0);
             for _ in 0..sample_count {
+                pb.inc(1);
                 let u  = (x as f64 + random_f64())/(imgx-1) as f64;
                 let v  = (y as f64 + random_f64())/(imgy-1) as f64;        
                 let r : ray = cam.get_ray(u, v);
-                pixel_color += ray_color(&r, &mut world, MAX_DEPTH as u32);
+                pixel_color += ray_color(&r, &mut world, max_depth as u32);
             }
             let rgb = write_color(pixel_color, sample_count);
             let pixel = imgbuf.get_pixel_mut(x as u32, y as u32);

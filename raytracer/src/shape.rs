@@ -1,5 +1,5 @@
 // External crate
-use std::rc::Rc;
+use std::sync::Arc;
 
 // Custom crate
 use rxmath::vector::*;
@@ -19,11 +19,11 @@ pub struct ShapeList<T: Shape>{
 pub struct Sphere {
     pub center : vec3,
     pub radius : f64,
-    pub mat_ptr : Rc<dyn material>,
+    pub mat_ptr : Arc<dyn material>,
 }
 
 impl Sphere {
-    pub fn new(center:vec3, radius:f64, mat_ptr:Rc<dyn material>) -> Self {
+    pub fn new(center:vec3, radius:f64, mat_ptr:Arc<dyn material>) -> Self {
         Sphere { center:center, radius:radius, mat_ptr:mat_ptr }
     }
 }
@@ -52,7 +52,7 @@ impl Shape for Sphere {
         h.pos = r.at(h.t);
         let outward_normal = (h.pos - self.center)/self.radius;
         h.set_face_normal(r, outward_normal);
-        h.mat_ptr = Rc::clone(&self.mat_ptr);
+        h.mat_ptr = Arc::clone(&self.mat_ptr);
         return true;
     }
 }

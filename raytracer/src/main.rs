@@ -2,7 +2,7 @@ extern crate image;
 
 // std
 use std::time::{Instant};
-use std::rc::Rc;
+use std::sync::Arc;
 
 // External create
 use chrono::{Utc};
@@ -38,7 +38,6 @@ pub fn ray_color(r:&ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
         let mut scattered:ray = ray::default();
         let mut attenuation = vec3(0f64, 0f64, 0f64);
         if i.mat_ptr.scatter(&r, &i, &mut attenuation, &mut scattered) {
-            //println!("{}", attenuation);
             return attenuation*ray_color(&scattered, objects, depth-1);
         }
         return vec3(0f64, 0f64, 0f64);
@@ -58,34 +57,34 @@ pub fn write_color(pixel_color:vec3, sample_count:u64) -> vec3 {
     return saturate_vec3(rgb)*256.0;
 }
 
-pub fn random_scene() -> ShapeList<Sphere> {
+pub fn random_scene(count:i8) -> ShapeList<Sphere> {
     let mut world = ShapeList::new();
 
-    let ground_material = Rc::new(lambertian::new(vec3(0.5, 0.5, 0.5)));
+    let ground_material = Arc::new(lambertian::new(vec3(0.5, 0.5, 0.5)));
     world.push( Sphere{center:vec3(0f64, 1000f64, 0f64), radius:1000.0f64, mat_ptr:ground_material} );
 
-    for a in -11..11 {
-        for b in -11..11 {
+    for a in -count..count {
+        for b in -count..count {
             let choose_mat = random_f64();
             let center = vec3(a as f64 + 0.9*random_f64(), -0.2, b as f64 + 0.9*random_f64());
         
             if (center - vec3(4.0, 0.2, 0.0)).length() > 0.9 {
-                let sphere_material:Rc<dyn material>;
+                let sphere_material:Arc<dyn material>;
 
                 if choose_mat < 0.8 {
                     // diffuse
                     let albedo = vec3::random() * vec3::random();
-                    sphere_material = Rc::new(lambertian::new(albedo));
+                    sphere_material = Arc::new(lambertian::new(albedo));
                     world.push(Sphere{center:center, radius:0.2, mat_ptr:sphere_material});
                 }
                 else if choose_mat < 0.95 {
                     let albedo = vec3::random_range(0.5, 1.0);
                     let fuzz = random_range_f64(0.0, 0.5);
-                    sphere_material = Rc::new(metal::new(albedo, fuzz));
+                    sphere_material = Arc::new(metal::new(albedo, fuzz));
                     world.push(Sphere::new(center, 0.2, sphere_material));
                 }
                 else {
-                    sphere_material = Rc::new(dielectric::new(1.5));
+                    sphere_material = Arc::new(dielectric::new(1.5));
                     world.push(Sphere::new(center, 0.2, sphere_material));
                 }
 
@@ -93,13 +92,13 @@ pub fn random_scene() -> ShapeList<Sphere> {
         }
     }
 
-    let material1 = Rc::new(dielectric::new(1.5));
+    let material1 = Arc::new(dielectric::new(1.5));
     world.push(Sphere::new(vec3(0.0, -1.0, 0.0), 1.0, material1));
 
-    let material2 = Rc::new(lambertian::new(vec3(0.4, 0.2, 0.1)));
+    let material2 = Arc::new(lambertian::new(vec3(0.4, 0.2, 0.1)));
     world.push(Sphere::new(vec3(-4.0, -1.0, 0.1), 1.0, material2));
 
-    let material3 = Rc::new(metal::new(vec3(0.7, 0.6, 0.5), 0.0));
+    let material3 = Arc::new(metal::new(vec3(0.7, 0.6, 0.5), 0.0));
     world.push(Sphere::new(vec3( 4.0, -1.0, 0.0), 1.0, material3));
 
     return world;
@@ -111,8 +110,8 @@ fn main() {
     let aspect_ratio:f64 = 3.0/2.0;
     let imgx:u32 = 400;
     let imgy:u32 = (imgx as f64/aspect_ratio) as u32;
-    let sample_count:u64 = 64;
-    let max_depth:u64= 50;
+    let sample_count:u64 = 1;
+    let max_depth:u64= 2;
 
     // Create a new ImgBuf with width: imgx and height: imgy
     let mut imgbuf = image::ImageBuffer::new(imgx as u32, imgy as u32);
@@ -120,7 +119,7 @@ fn main() {
     // Material List
 
     // World
-    let mut world = random_scene();
+    let mut world = random_scene(1);
 
     // Camera
     let lookfrom = vec3(13.0, -2.0, 3.0);

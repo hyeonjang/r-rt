@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
 use rxmath::vector::*;
 
@@ -24,12 +24,12 @@ pub struct hit {
     pub norm  : vec3,
     pub t     : f64,
     pub front : bool,
-    pub mat_ptr : Arc<dyn material>,
+    pub mat_ptr : Rc<dyn material>,
 }
 
 impl std::default::Default for hit {
     fn default() -> hit {
-        hit { pos:vec3(0.0, 0.0, 0.0), norm:vec3(0.0, 0.0, 0.0), t:0.0, front:true, mat_ptr:Arc::new(lambertian::new(vec3(0.0, 0.0, 0.0))) }
+        hit { pos:vec3(0.0, 0.0, 0.0), norm:vec3(0.0, 0.0, 0.0), t:0.0, front:true, mat_ptr:Rc::new(lambertian::new(vec3(0.0, 0.0, 0.0))) }
     }
 }
 

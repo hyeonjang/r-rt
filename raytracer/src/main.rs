@@ -17,6 +17,7 @@ pub mod intersect;
 pub mod shape;
 pub mod camera;
 pub mod sample;
+pub mod thread;
 
 use intersect::*;
 use shape::*;

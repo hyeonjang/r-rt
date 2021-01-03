@@ -29,18 +29,18 @@ pub struct Gvec4<T> { pub x:T, pub y:T, pub z : T, pub w:T }
 // 
 // 0.1.0 Contructors & Copy, Clone
 impl<T> Gvec2<T> {
-    #[inline] pub fn new(_x:T, _y:T) -> Gvec2<T> {
-        Gvec2{ x:_x, y:_y } 
+    #[inline] pub fn new(x:T, y:T) -> Gvec2<T> {
+        Gvec2{ x:x, y:y } 
     }
 }
 impl<T> Gvec3<T> {
-    #[inline] pub fn new(_x:T, _y:T, _z:T) -> Gvec3<T> {
-        Gvec3{ x:_x, y:_y, z:_z } 
+    #[inline] pub fn new(x:T, y:T, z:T) -> Gvec3<T> {
+        Gvec3{ x:x, y:y, z:z } 
     }
 }
 impl<T> Gvec4<T> {
-    #[inline] pub fn new(_x:T, _y:T, _z:T, _w:T) -> Gvec4<T> {
-        Gvec4{ x:_x, y:_y, z:_z, w:_w }
+    #[inline] pub fn new(x:T, y:T, z:T, w:T) -> Gvec4<T> {
+        Gvec4{ x:x, y:y, z:z, w:w }
     }
 }
 impl<T: Default> Default for Gvec2<T> {
@@ -75,183 +75,157 @@ impl_cpy!(Gvec4<T>{ x y z w });
 
 //////////////////////////////
 // 1. Operator overloading
-// 1.1 cmp
+// 1.1 c
 impl_cmp!(Gvec2<T>{ x y });
 impl_cmp!(Gvec3<T>{ x y z });
 impl_cmp!(Gvec4<T>{ x y z w });
-// 1.2. ops
+// 1.2. operator
 impl_ops!(Gvec2<T>{ x y });
 impl_ops!(Gvec3<T>{ x y z });
 impl_ops!(Gvec4<T>{ x y z w });
-
-impl<T> std::ops::Index<usize> for Gvec2<T> {
-    type Output = T;
-    fn index<'a>(&'a self, i:usize) -> &T {
-        match i {
-            0 => &self.x,
-            1 => &self.y,
-            _ => &&self.x,
-        }
-    }
-}
-
-impl<T> std::ops::Index<usize> for Gvec3<T> {
-    type Output = T;
-    fn index<'a>(&'a self, i:usize) -> &T {
-        match i {
-            0 => &self.x,
-            1 => &self.y,
-            2 => &self.z,
-            _ => &&self.x,
-        }
-    }
-}
-
-impl<T> std::ops::Index<usize> for Gvec4<T> {
-    type Output = T;
-    fn index<'a>(&'a self, i:usize) -> &T {
-        match i {
-            0 => &self.x,
-            1 => &self.y,
-            2 => &self.z,
-            3 => &self.w,
-            _ => &&self.x,
-        }
-    }
-}
+// 1.3. index
+impl_idx!(Gvec2<T>{ x 0 y 1 });
+impl_idx!(Gvec3<T>{ x 0 y 1 z 2 });
+impl_idx!(Gvec4<T>{ x 0 y 1 z 2 w 3 });
 
 //////////////////////////////
 /// 2. Vector features
 // 2.1 Floating Point operation Methods Trait for Vectors
 #[allow(non_camel_case_types)]
-pub trait vec<RHS=Self> {
+pub trait vec<RHS> {
     type Output;
-    fn norm2(&self) -> f64;
-    fn norm(&self) -> f64;
-    fn length2(&self) -> f64;
-    fn length(&self) -> f64;
-    fn dot(&self, rhs:RHS) ->f64;
+    fn norm2(&self) -> Self::Output;
+    fn norm(&self) -> Self::Output;
+    fn length2(&self) -> Self::Output;
+    fn length(&self) -> Self::Output;
+    fn dot(&self, rhs:RHS) -> Self::Output;
     fn normalize(&self) -> Self;
     fn near_zero(&self) -> bool;
 }
 // 2.1.1 Gvec2
-impl vec<Gvec2<f64>> for Gvec2<f64> {
-    type Output = f64;
+impl vec<Gvec2<f32>> for Gvec2<f32> {
+    type Output = f32;
 
-    #[inline] fn norm2(&self) -> f64 {
+    #[inline] fn norm2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.clone()* self.y)
     }
-    #[inline] fn norm(&self) -> f64 {
+    #[inline] fn norm(&self) -> f32 {
         self.norm2().sqrt()
     }
-    #[inline] fn length2(&self) -> f64 {
+    #[inline] fn length2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.clone()* self.y)
     }
-    #[inline] fn length(&self) -> f64 {
+    #[inline] fn length(&self) -> f32 {
         self.length2().sqrt()
     }
-    #[inline] fn dot(&self, rhs:Gvec2<f64>) -> f64 {
+    #[inline] fn dot(&self, rhs:Gvec2<f32>) -> f32 {
         self.x.mul_add(rhs.x, self.y * rhs.y)
     }
     #[inline] fn normalize(&self) -> Self {
         *self/self.length()
     }
     #[inline] fn near_zero(&self) -> bool {
-        const S:f64 = 1e-8;
+        const S:f32 = 1e-8;
         return (self.x.abs()<S) && (self.y.abs()<S)
     }
 }
 // 2.1.2 Gvec3
-impl vec<Gvec3<f64>> for Gvec3<f64> {
-    type Output = f64;
+impl vec<Gvec3<f32>> for Gvec3<f32> {
+    type Output = f32;
 
-    #[inline] fn norm2(&self) -> f64 {
+    #[inline] fn norm2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.clone()*self.z))
     }
-    #[inline] fn norm(&self) -> f64 {
+    #[inline] fn norm(&self) -> f32 {
         self.norm2().sqrt()
     }
-    #[inline] fn length2(&self) -> f64 {
+    #[inline] fn length2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.clone()*self.z))
     }
-    #[inline] fn length(&self) -> f64 {
+    #[inline] fn length(&self) -> f32 {
         self.length2().sqrt()
     }
-    #[inline] fn dot(&self,_v:Gvec3<f64>) -> f64 {
+    #[inline] fn dot(&self,_v:Gvec3<f32>) -> f32 {
         self.x.mul_add(_v.x, self.y.mul_add(_v.y, _v.z*self.z))
     }
     #[inline] fn normalize(&self) -> Self {
         *self/self.length()
     }
     #[inline] fn near_zero(&self) -> bool {
-        const S:f64 = 1e-8;
+        const S:f32 = 1e-8;
         return (self.x.abs()<S) && (self.y.abs()<S) && (self.z.abs()<S)
     }
 }
 
-impl Gvec3<f64> {
-    #[inline] pub fn cross(&self, rhs:Gvec3<f64>) -> Self{
+impl Gvec3<f32> {
+    #[inline] pub fn cross(&self, rhs:Gvec3<f32>) -> Self{
         Gvec3::new( self.y*rhs.z-self.z*rhs.y, self.z*rhs.x-self.x*rhs.z, self.x*rhs.y-self.y*rhs.x)
     } 
     #[inline] pub fn random() -> Self {
-        vec3(random_f64(), random_f64(), random_f64())
+        vec3(random_f32(), random_f32(), random_f32())
     }
-    #[inline] pub fn random_range(x:f64, y:f64) -> Self {
-        vec3(random_range_f64(x, y), random_range_f64(x, y), random_range_f64(x, y))
+    #[inline] pub fn random_range(x:f32, y:f32) -> Self {
+        vec3(random_range_f32(x, y), random_range_f32(x, y), random_range_f32(x, y))
+    }
+    #[inline] pub fn min() -> Self {
+        vec3(f32::MIN, f32::MIN, f32::MIN)
+    }
+    #[inline] pub fn max() -> Self {
+        vec3(f32::MAX, f32::MAX, f32::MAX)
     }
 }
 
 // 2.1.3 Gvec4
-impl vec<Gvec4<f64>> for Gvec4<f64> {
-    type Output = f64;
+impl vec<Gvec4<f32>> for Gvec4<f32> {
+    type Output = f32;
 
-    #[inline] fn norm2(&self) -> f64 {
+    #[inline] fn norm2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.mul_add(self.z, self.w.clone()*self.w)))
     }
-    #[inline] fn norm(&self) -> f64 {
+    #[inline] fn norm(&self) -> f32 {
         self.norm2().sqrt()
     }
-    #[inline] fn length2(&self) -> f64 {
+    #[inline] fn length2(&self) -> f32 {
         self.x.mul_add(self.x, self.y.mul_add(self.y, self.z.mul_add(self.z, self.w.clone()*self.w)))
     }
-    #[inline] fn length(&self) -> f64 {
+    #[inline] fn length(&self) -> f32 {
         self.length2().sqrt()
     }
-    #[inline] fn dot(&self,v:Gvec4<f64>) -> f64 {
+    #[inline] fn dot(&self,v:Gvec4<f32>) -> f32 {
         self.x.mul_add(v.x, self.y.mul_add(self.y, v.z.mul_add(self.z, v.w*self.w)))
     }
     #[inline] fn normalize(&self) -> Self {
         *self/self.length()
     }
     #[inline] fn near_zero(&self) -> bool {
-        const S:f64 = 1e-8;
+        const S:f32 = 1e-8;
         return (self.x.abs()<S) && (self.y.abs()<S) && (self.z.abs()<S) && (self.w.abs()<S)
     }
 }
 
 //////////////////////////////
 // 3. Final type aliasing
-#[allow(non_camel_case_types)] pub type vec2 = Gvec2<f64>;
-#[allow(non_camel_case_types)] pub type ivec2 = Gvec2<i64>;
-#[allow(non_camel_case_types)] pub type uvec2 = Gvec2<u64>;
-#[allow(non_camel_case_types)] pub type vec3 = Gvec3<f64>;
-#[allow(non_camel_case_types)] pub type ivec3 = Gvec3<i64>;
-#[allow(non_camel_case_types)] pub type uvec3 = Gvec3<u64>;
-#[allow(non_camel_case_types)] pub type vec4 = Gvec4<f64>;
-#[allow(non_camel_case_types)] pub type ivec4 = Gvec4<i64>;
-#[allow(non_camel_case_types)] pub type uvec4 = Gvec4<u64>;
+#[allow(non_camel_case_types)] pub type vec2 = Gvec2<f32>;
+#[allow(non_camel_case_types)] pub type ivec2 = Gvec2<i32>;
+#[allow(non_camel_case_types)] pub type uvec2 = Gvec2<u32>;
+#[allow(non_camel_case_types)] pub type vec3 = Gvec3<f32>;
+#[allow(non_camel_case_types)] pub type ivec3 = Gvec3<i32>;
+#[allow(non_camel_case_types)] pub type uvec3 = Gvec3<u32>;
+#[allow(non_camel_case_types)] pub type vec4 = Gvec4<f32>;
+#[allow(non_camel_case_types)] pub type ivec4 = Gvec4<i32>;
+#[allow(non_camel_case_types)] pub type uvec4 = Gvec4<u32>;
 
 //////////////////////////////
 /// ** considering point type
-pub type Fpoint2 = Gvec2<f64>;
-pub type Ipoint2 = Gvec2<i64>;
-pub type Upoint2 = Gvec2<u64>;
-pub type Fpoint3 = Gvec3<f64>;
-pub type Ipoint3 = Gvec3<i64>;
-pub type Upoint3 = Gvec3<u64>;
-pub type Fpoint4 = Gvec4<f64>;
-pub type Ipoint4 = Gvec4<i64>;
-pub type Upoint4 = Gvec4<u64>;
+pub type Fpoint2 = Gvec2<f32>;
+pub type Ipoint2 = Gvec2<i32>;
+pub type Upoint2 = Gvec2<u32>;
+pub type Fpoint3 = Gvec3<f32>;
+pub type Ipoint3 = Gvec3<i32>;
+pub type Upoint3 = Gvec3<u32>;
+pub type Fpoint4 = Gvec4<f32>;
+pub type Ipoint4 = Gvec4<i32>;
+pub type Upoint4 = Gvec4<u32>;
 
 // exactly todo = array to vector copy
 //////////////////////////////
@@ -266,7 +240,7 @@ impl_fmt!(vec4{ x y z w }, "<{} {} {} {}>");
 impl_fmt!(ivec4{ x y z w }, "<{} {} {} {}>");
 impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
 
-#[inline] pub fn dot( v0:vec3, v1:vec3 ) -> f64 {
+#[inline] pub fn dot( v0:vec3, v1:vec3 ) -> f32 {
     v0.dot(v1)
 }
 #[inline] pub fn cross( v0:vec3, v1:vec3 ) -> vec3 {
@@ -275,12 +249,12 @@ impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
 #[inline] pub fn normalize( v:vec3 ) -> vec3 {
     v.normalize()
 }
-#[inline] pub fn clamp( x:f64, min:f64, max:f64 ) -> f64 {
+#[inline] pub fn clamp( x:f32, min:f32, max:f32 ) -> f32 {
     if x<min { return min; } 
     if x>max { return max; }
     return x;
 }
-#[inline] pub fn saturate( x:f64 ) -> f64 {
+#[inline] pub fn saturate( x:f32 ) -> f32 {
     return clamp(x, 0.0, 1.0);
 }
 #[inline] pub fn saturate_vec3( v:vec3 ) -> vec3 {
@@ -289,9 +263,9 @@ impl_fmt!(uvec4{ x y z w }, "<{} {} {} {}>");
 #[inline] pub fn reflect( v:vec3, n:vec3 ) ->vec3 {
     return v - n*dot(v, n)*2.0;
 }
-#[inline] pub fn refract( uv:vec3, n:vec3, etai_over_etat:f64 ) -> vec3 {
+#[inline] pub fn refract( uv:vec3, n:vec3, etai_over_etat:f32 ) -> vec3 {
     let cos_theta = dot(-uv, n).min(1.0);
     let r_perp = (uv+n*cos_theta)*etai_over_etat;
-    let r_para = n * (-f64::sqrt((1.0-r_perp.length2()).abs()));
+    let r_para = n * (-f32::sqrt((1.0-r_perp.length2()).abs()));
     return r_perp + r_para;
 }

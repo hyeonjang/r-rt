@@ -130,3 +130,18 @@ macro_rules!  impl_ops {
     };
 }
 
+// overloading std::ops operators
+#[macro_export]
+macro_rules! impl_idx {
+    ($type:ty { $($field:ident $li:literal)+ }) => {
+        impl<T> std::ops::Index<usize> for $type {
+            type Output = T;
+            fn index<'a>(&'a self, i:usize) -> &T {
+                match i {
+                    $($li => &self.$field,)+
+                    _ => &&self.x,
+                }
+            }
+        }
+    };
+}

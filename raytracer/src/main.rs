@@ -18,6 +18,8 @@ pub mod shape;
 pub mod camera;
 pub mod sample;
 pub mod thread;
+pub mod bbox;
+pub mod bvh;
 
 use intersect::*;
 use shape::*;
@@ -32,17 +34,17 @@ pub fn ray_color(r:&ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
     let mut i:hit = hit::default();
 
     if depth <= 0 {
-        return vec3(0f64, 0f64, 0f64);
+        return vec3(0f32, 0f32, 0f32);
     }
 
-    if objects.hit(&r, 0.001, f64::MAX, &mut i) { 
+    if objects.hit(&r, 0.001, f32::MAX, &mut i) { 
         let mut scattered:ray = ray::default();
-        let mut attenuation = vec3(0f64, 0f64, 0f64);
+        let mut attenuation = vec3(0f32, 0f32, 0f32);
         if i.mat_ptr.scatter(&r, &i, &mut attenuation, &mut scattered) {
             //println!("{}", attenuation);
             return attenuation*ray_color(&scattered, objects, depth-1);
         }
-        return vec3(0f64, 0f64, 0f64);
+        return vec3(0f32, 0f32, 0f32);
     }
 
     let unit_direction = normalize(r.dir);
@@ -51,10 +53,10 @@ pub fn ray_color(r:&ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
 }
 
 pub fn write_color(pixel_color:vec3, sample_count:u64) -> vec3 {
-    let scale = 1.0 / sample_count as f64;
+    let scale = 1.0 / sample_count as f32;
 
     let xyz = pixel_color*scale;
-    let rgb = vec3(f64::sqrt(xyz.x), f64::sqrt(xyz.y), f64::sqrt(xyz.z));
+    let rgb = vec3(f32::sqrt(xyz.x), f32::sqrt(xyz.y), f32::sqrt(xyz.z));
 
     return saturate_vec3(rgb)*256.0;
 }
@@ -63,17 +65,17 @@ pub fn random_scene(count:i8) -> ShapeList<Sphere> {
     let mut world = ShapeList::new();
 
     let ground_material = Arc::new(lambertian::new(vec3(0.5, 0.5, 0.5)));
-    world.push( Sphere{center:vec3(0f64, 1000f64, 0f64), radius:1000.0f64, mat_ptr:ground_material} );
+    world.push( Sphere{center:vec3(0f32, 1000f32, 0f32), radius:1000.0f32, mat_ptr:ground_material} );
 
     for a in -count..count {
         for b in -count..count {
-            let choose_mat = random_f64();
-            let center = vec3(a as f64 + 0.9*random_f64(), -0.2, b as f64 + 0.9*random_f64());
+            let choose_mat = random_f32();
+            let center = vec3(a as f32 + 0.9*random_f32(), -0.2, b as f32 + 0.9*random_f32());
         
             if (center - vec3(4.0, 0.2, 0.0)).length() > 0.9 {
                 let sphere_material:Arc<dyn material>;
 
-                if choose_mat < 0.8 {
+                if choose_mat < 0.8 { 
                     // diffuse
                     let albedo = vec3::random() * vec3::random();
                     sphere_material = Arc::new(lambertian::new(albedo));
@@ -81,7 +83,7 @@ pub fn random_scene(count:i8) -> ShapeList<Sphere> {
                 }
                 else if choose_mat < 0.95 {
                     let albedo = vec3::random_range(0.5, 1.0);
-                    let fuzz = random_range_f64(0.0, 0.5);
+                    let fuzz = random_range_f32(0.0, 0.5);
                     sphere_material = Arc::new(metal::new(albedo, fuzz));
                     world.push(Sphere::new(center, 0.2, sphere_material));
                 }
@@ -109,9 +111,9 @@ pub fn random_scene(count:i8) -> ShapeList<Sphere> {
 fn main() {
 
     // Image
-    let aspect_ratio:f64 = 3.0/2.0;
+    let aspect_ratio:f32 = 3.0/2.0;
     let imgx:u32 = 400;
-    let imgy:u32 = (imgx as f64/aspect_ratio) as u32;
+    let imgy:u32 = (imgx as f32/aspect_ratio) as u32;
     let sample_count:u64 = 4;
     let max_depth:u64= 4;
 
@@ -130,7 +132,7 @@ fn main() {
     let dist_to_focus = 10.0;
     let aperture = 0.1;
 
-    let cam = Camera::new(lookfrom, lookat, vup, 20.0, aspect_ratio, aperture, dist_to_focus);
+    let cam = Camera::new(lookfrom, lookat, vup, 20.0, aspect_ratio, aperture, dist_to_focus, 0.0, 0.1);
     // ** upside downed why
 
     // Ray Trace!
@@ -142,8 +144,8 @@ fn main() {
             let mut pixel_color = vec3(0.0, 0.0, 0.0);
             for _ in 0..sample_count {
                 pb.inc(1);
-                let u  = (x as f64 + random_f64())/(imgx-1) as f64;
-                let v  = (y as f64 + random_f64())/(imgy-1) as f64;        
+                let u  = (x as f32 + random_f32())/(imgx-1) as f32;
+                let v  = (y as f32 + random_f32())/(imgy-1) as f32;        
                 let r : ray = cam.get_ray(u, v);
                 pixel_color += ray_color(&r, &mut world, max_depth as u32);
             }

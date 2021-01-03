@@ -1,4 +1,5 @@
 use rxmath::vector::*;
+use rxmath::random::*;
 
 use crate::intersect::*;
 use crate::sample::*;
@@ -10,13 +11,15 @@ pub struct Camera {
     horizontal : vec3,
     vertical : vec3,
     w:vec3, u:vec3, v:vec3,
-    lens_radius:f64,
+    lens_radius:f32,
+    time0:f32,
+    time1:f32,
 }
 
 impl Camera {
-    pub fn new(lookfrom:vec3, lookat:vec3, vup:vec3, vfov:f64, aspect_ratio:f64, apeture:f64, focus_dist:f64) -> Self {
+    pub fn new(lookfrom:vec3, lookat:vec3, vup:vec3, vfov:f32, aspect_ratio:f32, apeture:f32, focus_dist:f32, time0:f32, time1:f32) -> Self {
         let theta = rxmath::degrees_to_radians(vfov);
-        let h = f64::tan(theta/2.0);
+        let h = f32::tan(theta/2.0);
         let viewport_height = 2.0 * h;
         let viewport_width = aspect_ratio * viewport_height;
 
@@ -31,13 +34,13 @@ impl Camera {
         
         let lens_radius = apeture/2.0;
 
-        return Camera{ origin:origin, horizontal:horizontal, vertical:vertical, lower_left_corner:lower_left_corner, w:w, u:u, v:v, lens_radius:lens_radius }
+        return Camera{ origin:origin, horizontal:horizontal, vertical:vertical, lower_left_corner:lower_left_corner, w:w, u:u, v:v, lens_radius:lens_radius, time0:time0, time1:time1 }
     }
 
-    pub fn get_ray(&self, s:f64, t:f64) -> ray{
+    pub fn get_ray(&self, s:f32, t:f32) -> ray{
         let rd = random_unit_disk()*self.lens_radius;
         let offset = self.u*rd.x + self.v*rd.y;
 
-        return ray{o:self.origin+offset, dir:(self.lower_left_corner+self.horizontal*s+self.vertical*t-self.origin-offset)}
+        return ray{o:self.origin+offset, dir:(self.lower_left_corner+self.horizontal*s+self.vertical*t-self.origin-offset),tm:random_range_f32(self.time0, self.time1)}
     }
 } 

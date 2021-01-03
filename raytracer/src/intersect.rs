@@ -9,12 +9,20 @@ use crate::shape::*;
 pub struct ray {
     pub o : vec3,
     pub dir : vec3,
+    pub tm : f32,
 }
 
 impl ray {
-    pub fn at(self, t:f64) -> vec3 {
+    pub fn at(&self, t:f32) -> vec3 {
         return self.o + self.dir*t;
     } 
+    pub fn new(o:vec3, d:vec3, t:Option<f32>) -> ray {
+        match t {
+            Some(p) =>  ray{ o:o, dir:d, tm:t.unwrap() },
+            None => ray{ o:o, dir:d , tm:0.0 },
+        }
+       
+    }
 }
 
 #[derive(Clone)]
@@ -22,7 +30,7 @@ impl ray {
 pub struct hit {
     pub pos   : vec3,
     pub norm  : vec3,
-    pub t     : f64,
+    pub t     : f32,
     pub front : bool,
     pub mat_ptr : Arc<dyn material>,
 }
@@ -33,12 +41,6 @@ impl std::default::Default for hit {
     }
 }
 
-#[allow(dead_code)]
-impl ray {
-    pub fn new(_o:vec3, _d:vec3) -> ray {
-        ray{ o:_o, dir:_d }
-    }
-}
 
 impl hit {
     #[inline] pub fn set_face_normal(&mut self, r: &ray, on:vec3) {

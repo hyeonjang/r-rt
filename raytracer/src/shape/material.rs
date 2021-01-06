@@ -1,100 +1,12 @@
-// External crate
-use std::sync::Arc;
-
-// Custom crate
 use rxmath::vector::*;
 use rxmath::random::*;
 
-use crate::intersect::*;
 use crate::sample::*;
-use crate::bbox::*;
-
-// ShapeList
-pub struct ShapeList<T: Shape>{
-    pub list : Vec<T>,
-}
-
-impl<T: Shape> ShapeList<T> {
-    pub fn new() -> Self {
-        ShapeList{ list:Vec::new() }
-    }
-    pub fn clear(&mut self) { 
-        self.list.clear(); 
-    }
-    pub fn push(&mut self, shape:T) {
-        self.list.push(shape)
-    }
-    pub fn hit(&self, r:&ray, t_min:f32, t_max:f32, h:&mut hit) -> bool {
-        let mut i = hit::default();
-        let mut hit = false;
-        let mut closest = t_max;
-
-        for object in &self.list {
-            if object.intersect(r, t_min, closest, &mut i) {
-                hit = true;
-                closest = i.t.clone();
-                *h = i.clone();
-            }
-        }
-        return hit;
-    }
-}
-
-// traits for all kind of Shapes
-pub trait Shape {
-    fn intersect( &self, r:&ray, t_min:f32, t_max:f32, i:&mut hit ) -> bool;
-    fn bbox( &self, b:BBox ) -> bool;
-}
-
-// 1. Sphere
-pub struct Sphere {
-    pub center : vec3,
-    pub radius : f32,
-    pub mat_ptr : Arc<dyn material>,
-}
-
-impl Sphere {
-    pub fn new(center:vec3, radius:f32, mat_ptr:Arc<dyn material>) -> Self {
-        Sphere { center:center, radius:radius, mat_ptr:mat_ptr }
-    }
-}
-
-impl Shape for Sphere {
-    fn intersect( &self, r:&ray, t_min:f32, t_max:f32, h:&mut hit ) -> bool {
-        // the simplified version
-        let oc:vec3 = r.o - self.center;
-        let a = r.dir.length2();
-        let b = oc.dot(r.dir);
-        let c = oc.length2() - self.radius*self.radius;
-        
-        let discriminant = b*b - a*c;
-        if discriminant<0.0 { return false;}  
-        let sqrtd = f32::sqrt(discriminant);
-
-        let mut root = (-b-sqrtd)/a;
-        if root<t_min || t_max<root {
-            root = (-b+sqrtd)/a;
-            if root<t_min || t_max<root {
-                return false;
-            }
-        }
-
-        h.t = root;
-        h.pos = r.at(h.t);
-        let outward_normal = (h.pos - self.center)/self.radius;
-        h.set_face_normal(r, outward_normal);
-        h.mat_ptr = Arc::clone(&self.mat_ptr);
-        return true;
-    }
-    fn bbox( &self, b:BBox ) -> bool {
-        return true;
-    }
-}
-
+use crate::intersect::*;
 
 /// material
 #[allow(non_camel_case_types)]
-pub trait material {
+pub trait Material {
     fn scatter(&self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool;
 }
 
@@ -132,7 +44,7 @@ impl dielectric {
     }
 }
 
-impl material for lambertian {
+impl Material for lambertian {
     fn scatter(&self, _r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
         let mut scatter_direction = h.norm + random_unit_vector();
 
@@ -146,7 +58,7 @@ impl material for lambertian {
     }
 }
 
-impl material for metal {
+impl Material for metal {
     fn scatter(&self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
         let reflected = reflect(r.dir.normalize(), h.norm);
         *scattered = ray::new(h.pos, reflected + random_unit_sphere()*self.fuzz, None);
@@ -155,7 +67,7 @@ impl material for metal {
     }
 }
 
-impl material for dielectric {
+impl Material for dielectric {
     fn scatter(&self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
         *attenuation = vec3(1.0, 1.0, 1.0);
         let refraction_ratio = { if h.front { 1.0/self.ir } else { self.ir } };

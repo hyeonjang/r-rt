@@ -14,23 +14,25 @@ use rxmath::random::*;
 
 // Current crate
 pub mod intersect;
-pub mod shape;
 pub mod camera;
 pub mod sample;
-pub mod thread;
-pub mod bbox;
-pub mod bvh;
+//pub mod thread;
 
-use intersect::*;
+mod accelerator;
+mod shape;
+
+use self::intersect::*;
 use shape::*;
-use camera::*;
+use shape::material::*;
+use shape::sphere::*;
+use self::camera::*;
 
 // static variables
 static NAME:&'static str = "ray-tracer";
 static STYLE:&'static str = "[{elapsed_precise}] [{bar:40.cyan/blue}] ({eta})";
 pub fn get_date()->String{ return Utc::now().format("%Y-%m-%d").to_string(); }
 
-pub fn ray_color(r:&ray, objects:&ShapeList<Sphere>, depth:u32) -> vec3 {
+pub fn ray_color(r:&ray, objects:&ShapeList, depth:u32) -> vec3 {
     let mut i:hit = hit::default();
 
     if depth <= 0 {
@@ -61,7 +63,7 @@ pub fn write_color(pixel_color:vec3, sample_count:u64) -> vec3 {
     return saturate_vec3(rgb)*256.0;
 }
 
-pub fn random_scene(count:i8) -> ShapeList<Sphere> {
+pub fn random_scene(count:i8) -> ShapeList {
     let mut world = ShapeList::new();
 
     let ground_material = Arc::new(lambertian::new(vec3(0.5, 0.5, 0.5)));
@@ -73,7 +75,7 @@ pub fn random_scene(count:i8) -> ShapeList<Sphere> {
             let center = vec3(a as f32 + 0.9*random_f32(), -0.2, b as f32 + 0.9*random_f32());
         
             if (center - vec3(4.0, 0.2, 0.0)).length() > 0.9 {
-                let sphere_material:Arc<dyn material>;
+                let sphere_material:Arc<dyn Material>;
 
                 if choose_mat < 0.8 { 
                     // diffuse

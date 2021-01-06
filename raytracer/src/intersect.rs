@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use rxmath::vector::*;
 
-use crate::shape::*;
+use crate::shape::material::*;
 
 #[derive(Default, Copy, Clone)]
 #[allow(non_camel_case_types)]
@@ -32,7 +32,7 @@ pub struct hit {
     pub norm  : vec3,
     pub t     : f32,
     pub front : bool,
-    pub mat_ptr : Arc<dyn material>,
+    pub mat_ptr : Arc<dyn Material>,
 }
 
 impl std::default::Default for hit {

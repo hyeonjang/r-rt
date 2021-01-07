@@ -1,10 +1,15 @@
-pub mod bbox;
+pub mod bounds;
 pub mod bvh;
 
 use crate::shape::*;
 
+#[allow(non_camel_case_types)]
+pub enum AcceleratorType {
+    kDTree,
+    BVH,
+}
+
 pub trait Accelerator {
-    type Output;
-    fn build(&self, primitives:&Vec<Box<dyn Shape>>) -> Self::Output;
-    fn hit() -> bool;
+    fn build<'a>(&self, primitives:&Vec<Box<dyn Shape + 'a>>);
+    fn hit(&self) -> bool;
 }

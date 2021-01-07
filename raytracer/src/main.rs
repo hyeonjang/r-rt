@@ -126,6 +126,11 @@ fn main() {
 
     // World
     let mut world = random_scene(1);
+    let acc_start = Instant::now();
+    world.acc_build(accelerator::AcceleratorType::BVH);
+    let acc_end = acc_start.elapsed();
+    println!("[{}] accelerator building duration:{:?}", NAME, acc_end);
+    return;
 
     // Camera
     let lookfrom = vec3(13.0, -2.0, 3.0);

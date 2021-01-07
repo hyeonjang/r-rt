@@ -4,8 +4,12 @@ use rxmath::vector::*;
 
 use crate::shape::material::*;
 
-#[derive(Default, Copy, Clone)]
+pub trait Intersect {
+    fn intersect(r:&ray) -> bool;
+}
+
 #[allow(non_camel_case_types)]
+#[derive(Default, Copy, Clone)]
 pub struct ray {
     pub o : vec3,
     pub dir : vec3,
@@ -25,8 +29,8 @@ impl ray {
     }
 }
 
-#[derive(Clone)]
 #[allow(non_camel_case_types)]
+#[derive(Clone)]
 pub struct hit {
     pub pos   : vec3,
     pub norm  : vec3,

@@ -2,43 +2,24 @@ pub mod material;
 pub mod sphere;
 
 use crate::intersect::*;
-use crate::sample::*;
 
 use crate::accelerator::*;
-use bbox::*;
+use bounds::*;
 
 // traits for all kind of Shapes
 pub trait Shape
 {
     fn intersect( &self, r:&ray, t_min:f32, t_max:f32, i:&mut hit ) -> bool;
-    fn bbox( &self, b:BBox ) -> bool;
-}
-
-pub struct Rectangle
-{
-
-}
-
-impl Shape for Rectangle 
-{
-    fn intersect( &self, r:&ray, t_min:f32, t_max:f32, i:&mut hit ) -> bool
-    {
-        return true;
-    }
-    fn bbox( &self, b:BBox ) -> bool 
-    {
-        return true;
-    }
+    fn bounds( &self ) -> Bounds;
 }
 
 // ShapeList
 pub struct ShapeList {
     pub list : Vec<Box<dyn Shape>>,
-    pub acc : Option<bvh::BVH>,
+    pub acc : Option<Box<dyn Accelerator>>,
 }
 
-impl ShapeList
-{
+impl ShapeList {
     pub fn new() -> Self {
         ShapeList{ list:vec![], acc:None }
     }
@@ -63,11 +44,12 @@ impl ShapeList
         }
         return hit;
     }
-    pub fn acc_build(&self)
-    {
-        //self.acc.unwrap().build(self.list);
+    pub fn acc_build(&mut self, ty:AcceleratorType) {
+        let acc = match ty {
+            AcceleratorType::BVH => bvh::BVH { nodes:vec![] },
+            AcceleratorType::kDTree => bvh::BVH { nodes:vec![] },
+        };
+        acc.build(&self.list);
+        self.acc = Some( Box::new(acc) );
     }
 }
-
-
-

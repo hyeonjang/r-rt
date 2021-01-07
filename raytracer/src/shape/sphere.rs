@@ -12,8 +12,7 @@ use crate::shape::*;
 use crate::shape::material::*;
 
 // 1. Sphere
-pub struct Sphere
-{
+pub struct Sphere {
     pub center :vec3,
     pub radius :f32,
     pub mat_ptr :Arc<dyn Material>,
@@ -52,7 +51,7 @@ impl Shape for Sphere {
         h.mat_ptr = Arc::clone(&self.mat_ptr);
         return true;
     }
-    fn bbox( &self, b:BBox ) -> bool {
-        return true;
+    fn bounds( &self ) -> Bounds {
+        Bounds::new(self.center-vec3(self.radius, self.radius, self.radius), self.center+vec3(self.radius, self.radius, self.radius))
     }
 }

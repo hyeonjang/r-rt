@@ -49,6 +49,10 @@ impl Bounds {
         Bounds { min:vec3::min(), max:vec3::max() }
     }
 
+    pub fn center(&self) -> vec3 {
+        (self.min + self.max)*0.5
+    }
+
     pub fn size(&self) -> vec3 {
         return self.max - self.min;
     }

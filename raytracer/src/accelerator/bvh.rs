@@ -29,6 +29,13 @@ impl Node {
 pub struct BVH {
     pub nodes:Vec<Node>,
 }
+
+impl BVH {
+    pub fn new() -> Self {
+        BVH { nodes:vec![], }
+    }
+}
+
 ///
 ///////////////////////////////////////////////////////
 /// 2. BVH build information
@@ -47,16 +54,16 @@ struct BuildNode {
     bound : Bounds,
     //center : vec3,
     nprim : u32,
-    axis : u32,
+    axis : usize,
     l : Option<Box<BuildNode>>,
     r : Option<Box<BuildNode>>, 
 }
 
 impl BuildNode {
-    pub fn init_leaf(&self, first:i32, b:Bounds) -> Self {
+    fn init_leaf(&self, first:i32, b:Bounds) -> Self {
         BuildNode { bound:b, nprim:1, axis:1, l:None, r:None }
     }
-    pub fn init_interior(&mut self, axis:u32, c0:Box<BuildNode>, c1:Box<BuildNode>) {
+    fn init_interior(&mut self, axis:usize, c0:Box<BuildNode>, c1:Box<BuildNode>) {
         self.bound = Bounds::bounds(c0.bound, c1.bound);
         self.l = Some(c0);
         self.r = Some(c1);
@@ -65,7 +72,7 @@ impl BuildNode {
     }
 }
 
-pub struct BVHBuild {
+struct BVHBuild {
     unordered_prmitives : PrimitiveList,
     ordered_primitives : PrimitiveList,
     method : Method,
@@ -77,38 +84,42 @@ impl BVHBuild {
         BVHBuild{ unordered_prmitives:primitives.to_vec(), ordered_primitives:vec![], method:method }        
     }
 
-     fn build(&mut self, start:usize, end:usize) -> Box<BuildNode>     {
+    fn split_sah() -> usize {
+        return 0;
+    }
+
+    fn split_equal_counts(primitives:&mut PrimitiveList, start:usize, end:usize, dim:usize) -> usize {
+        let selected = primitives.select_nth_unstable_by(2, |p0, p1| p0.center[dim].partial_cmp(&p1.center[dim]).unwrap() );
+        return (start+end)/2;
+    }
+
+    fn build(&mut self, start:usize, end:usize) -> Box<BuildNode>     {
         let mut n:Box<BuildNode> = Box::new(BuildNode::default());
         let b_prim = &mut n.bound;
         //let mut b_cent = &mut n.center;
-        println!("{:?} {:?}", b_prim.min, b_prim.max);
         for i in start..end {
             b_prim.expand(self.unordered_prmitives[i].bound);
             //b_cent.expand(self.unordered_prmitives[i].center);
         }
+        println!("{:?} {:?}", b_prim.min, b_prim.max);
+        let mut dim = b_prim.max_extend() as usize;
         let nprim = end - start;
-        if nprim == 1 {
+        if nprim <= 1 {
             //self.nodes.push();
             return Box::new(n.init_leaf(0, n.bound));
         }
         let mut middle = (start+end)/2;
-        let mut dim = b_prim.max_extend() as usize;
         middle = match self.method {
-            Method::SAH => self.split_sah(),
-            Method::EQUAL => 
-            {
-                let selected = self.unordered_prmitives.select_nth_unstable_by(2, |p0, p1| p0.center[dim].partial_cmp(&p1.center[dim]).unwrap() );
-                (start+end)/2
-            }
+            Method::SAH => BVHBuild::split_sah(),
+            Method::EQUAL => BVHBuild::split_equal_counts(&mut self.unordered_prmitives, start, end, dim),
+ 
         };
 
-        n.init_interior(0, self.build(start, middle), self.build(middle, end));
+        n.init_interior(dim, self.build(start, middle), self.build(middle, end));
         return n;
      }
 
-     fn split_sah(&self) -> usize {
-         return 0;
-     }
+
 
 }
 ///
@@ -118,10 +129,17 @@ impl Accelerator for BVH {
         return true;
     }
     fn build<'a>(&self, primitive:&Vec<Box<dyn Shape + 'a>>) {
-        let mut primitives:Vec<Primitive> = Vec::with_capacity(self.nodes.capacity());
+        for prim in primitive {
+            println!("{} {}", prim.bounds().min, prim.bounds().max);
+        }
 
-        let mut bvh_build = BVHBuild::new(&primitives, Method::SAH);
-        bvh_build.build(0, 10);
+        let mut primitives:Vec<Primitive> = Vec::with_capacity(primitive.capacity());
+        println!("{:?}", primitives.capacity());
+        for i in 0..primitives.capacity() {
+            primitives.push(Primitive{ id:i, bound:primitive[i].bounds(), center:primitive[i].bounds().center() });
+        }
+        let mut bvh_build = BVHBuild::new(&primitives, Method::EQUAL);
+        bvh_build.build(0, primitives.len());
         //let mut unordered_prmitives = primitives;
 
         // for i in 0..primitives.len() 
@@ -132,14 +150,14 @@ impl Accelerator for BVH {
     }
 }
 
-// pub fn create(primitives:&Vec<Box<dyn Shape>>) -> BVH {
-//     let bvh:BVH;
+pub fn create(primitives:&Vec<Box<dyn Shape>>) -> Box<BVH> {
+    let bvh = Box::new(BVH::new());
+    bvh.build(primitives);
 
-//     let unordered_prmitives = primitives;
+    let unordered_prmitives = primitives;
 
-
-//     return bvh;
-// }
+    return bvh;
+}
 
 
 #[cfg(test)]

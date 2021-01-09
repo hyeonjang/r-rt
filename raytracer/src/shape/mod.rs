@@ -7,8 +7,7 @@ use crate::accelerator::*;
 use bounds::*;
 
 // traits for all kind of Shapes
-pub trait Shape
-{
+pub trait Shape{
     fn intersect( &self, r:&ray, t_min:f32, t_max:f32, i:&mut hit ) -> bool;
     fn bounds( &self ) -> Bounds;
 }
@@ -46,10 +45,9 @@ impl ShapeList {
     }
     pub fn acc_build(&mut self, ty:AcceleratorType) {
         let acc = match ty {
-            AcceleratorType::BVH => bvh::BVH { nodes:vec![] },
-            AcceleratorType::kDTree => bvh::BVH { nodes:vec![] },
+            AcceleratorType::BVH => bvh::create(&self.list),
+            AcceleratorType::kDTree => bvh::create(&self.list),
         };
-        acc.build(&self.list);
-        self.acc = Some( Box::new(acc) );
+        self.acc = Some(acc);
     }
 }

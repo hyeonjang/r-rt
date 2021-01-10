@@ -42,7 +42,7 @@ impl BVH {
 
 #[derive(Clone)]
 struct Primitive {
-    id:usize,
+    id:i32,
     center:vec3,
     bound:Bounds, 
 }
@@ -101,12 +101,11 @@ impl BVHBuild {
             b_prim.expand(self.unordered_prmitives[i].bound);
             //b_cent.expand(self.unordered_prmitives[i].center);
         }
-        println!("{:?} {:?}", b_prim.min, b_prim.max);
         let mut dim = b_prim.max_extend() as usize;
         let nprim = end - start;
         if nprim <= 1 {
-            //self.nodes.push();
-            return Box::new(n.init_leaf(0, n.bound));
+            self.ordered_primitives.push(self.unordered_prmitives[start].clone());
+            return Box::new(n.init_leaf(self.unordered_prmitives[start].id, n.bound));
         }
         let mut middle = (start+end)/2;
         middle = match self.method {
@@ -136,10 +135,15 @@ impl Accelerator for BVH {
         let mut primitives:Vec<Primitive> = Vec::with_capacity(primitive.capacity());
         println!("{:?}", primitives.capacity());
         for i in 0..primitives.capacity() {
-            primitives.push(Primitive{ id:i, bound:primitive[i].bounds(), center:primitive[i].bounds().center() });
+            primitives.push(Primitive{ id:i as i32, bound:primitive[i].bounds(), center:primitive[i].bounds().center() });
         }
         let mut bvh_build = BVHBuild::new(&primitives, Method::EQUAL);
         bvh_build.build(0, primitives.len());
+
+        for i in bvh_build.ordered_primitives {
+            println!("{}", i.bound.min);
+        }
+
         //let mut unordered_prmitives = primitives;
 
         // for i in 0..primitives.len() 

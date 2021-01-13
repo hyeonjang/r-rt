@@ -10,6 +10,6 @@ pub enum AcceleratorType {
 }
 
 pub trait Accelerator {
-    fn build<'a>(&self, primitives:&Vec<Box<dyn Shape + 'a>>);
+    fn build(&mut self, primitives:&Vec<Box<dyn Shape>>);
     fn hit(&self) -> bool;
 }

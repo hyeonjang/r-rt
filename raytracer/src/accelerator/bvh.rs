@@ -9,20 +9,21 @@ use bounds::*;
 pub enum Method{
     SAH,
     EQUAL,
+    MIDDLE,
 }
  
 #[repr(packed(32))]
 pub struct Node {
     min:vec3,
     max:vec3,
-    second_or_index:u32,
+    second_or_index:usize,
     parent:u32, 
     axis:u32,
 }
 
 impl Node {
     pub fn new() -> Self {
-        Node { min:vec3::min(), max:vec3::max(), second_or_index:u32::default(), parent:u32::default(), axis:u32::default() }
+        Node { min:vec3::min(), max:vec3::max(), second_or_index:usize::default(), parent:u32::default(), axis:u32::default() }
     }
 }
 
@@ -34,17 +35,24 @@ impl BVH {
     pub fn new() -> Self {
         BVH { nodes:vec![], }
     }
+    pub fn flatten_tree(&mut self, node:Option<Box<BuildNode>>, offset:usize) -> usize {
+        let mut f = &mut self.nodes[offset];
+        let offset0 = offset+1;
+
+        self.flatten_tree(node.unwrap().l, offset0);
+        f.second_or_index = self.flatten_tree(node.unwrap().r, offset0);
+
+        return offset0;
+    }
 }
 
-///
 ///////////////////////////////////////////////////////
 /// 2. BVH build information
-
 #[derive(Clone)]
 struct Primitive {
     id:i32,
     center:vec3,
-    bound:Bounds, 
+    bound:Bounds,
 }
 
 type PrimitiveList = Vec<Primitive>;
@@ -101,7 +109,7 @@ impl BVHBuild {
             b_prim.expand(self.unordered_prmitives[i].bound);
             //b_cent.expand(self.unordered_prmitives[i].center);
         }
-        let mut dim = b_prim.max_extend() as usize;
+        let dim = b_prim.max_extend() as usize;
         let nprim = end - start;
         if nprim <= 1 {
             self.ordered_primitives.push(self.unordered_prmitives[start].clone());
@@ -111,23 +119,20 @@ impl BVHBuild {
         middle = match self.method {
             Method::SAH => BVHBuild::split_sah(),
             Method::EQUAL => BVHBuild::split_equal_counts(&mut self.unordered_prmitives, start, end, dim),
- 
+            Method::MIDDLE => BVHBuild::split_sah(),
         };
 
         n.init_interior(dim, self.build(start, middle), self.build(middle, end));
         return n;
      }
-
-
-
 }
-///
+
 ////////////////////////////////////////////
 impl Accelerator for BVH {
     fn hit(&self) -> bool {
         return true;
     }
-    fn build<'a>(&self, primitive:&Vec<Box<dyn Shape + 'a>>) {
+    fn build(&mut self, primitive:&Vec<Box<dyn Shape>>) {
         for prim in primitive {
             println!("{} {}", prim.bounds().min, prim.bounds().max);
         }
@@ -138,24 +143,18 @@ impl Accelerator for BVH {
             primitives.push(Primitive{ id:i as i32, bound:primitive[i].bounds(), center:primitive[i].bounds().center() });
         }
         let mut bvh_build = BVHBuild::new(&primitives, Method::EQUAL);
-        bvh_build.build(0, primitives.len());
+        let root = bvh_build.build(0, primitives.len());
 
         for i in bvh_build.ordered_primitives {
             println!("{}", i.bound.min);
         }
 
-        //let mut unordered_prmitives = primitives;
-
-        // for i in 0..primitives.len() 
-        // {
-        //     primitives[i] = Primitive{ id:i, bound:primitives[i].bound };
-        // }
-        let root:*const BuildNode = &BuildNode::default();
+        self.flatten_tree(Some(root), 0);
     }
 }
 
 pub fn create(primitives:&Vec<Box<dyn Shape>>) -> Box<BVH> {
-    let bvh = Box::new(BVH::new());
+    let mut bvh = Box::new(BVH::new());
     bvh.build(primitives);
 
     let unordered_prmitives = primitives;

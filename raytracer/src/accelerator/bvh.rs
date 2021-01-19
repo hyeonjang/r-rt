@@ -35,12 +35,16 @@ impl BVH {
     pub fn new() -> Self {
         BVH { nodes:vec![], }
     }
-    pub fn flatten_tree(&mut self, node:Option<Box<BuildNode>>, offset:usize) -> usize {
-        let mut f = &mut self.nodes[offset];
+    pub fn flatten_tree(bvh:&mut BVH, node:Option<&Box<BuildNode>>, offset:usize) -> usize {
         let offset0 = offset+1;
 
-        self.flatten_tree(node.unwrap().l, offset0);
-        f.second_or_index = self.flatten_tree(node.unwrap().r, offset0);
+        let node = match node {
+            Some(s) => node.unwrap(),
+            None => return 0,
+        };
+
+        BVH::flatten_tree(bvh, node.l.as_ref(), offset0);
+        bvh.nodes[offset].second_or_index = BVH::flatten_tree(bvh, node.r.as_ref(), offset0);
 
         return offset0;
     }
@@ -58,7 +62,7 @@ struct Primitive {
 type PrimitiveList = Vec<Primitive>;
 
 #[derive(Default)]
-struct BuildNode {
+pub struct BuildNode {
     bound : Bounds,
     //center : vec3,
     nprim : u32,
@@ -149,7 +153,13 @@ impl Accelerator for BVH {
             println!("{}", i.bound.min);
         }
 
-        self.flatten_tree(Some(root), 0);
+        println!("start flatten");
+
+        BVH::flatten_tree(self, Some(&root), 0);
+
+        for node in &self.nodes {
+            println!("{}", node.second_or_index);
+        }
     }
 }
 

@@ -16,8 +16,8 @@ impl Union<Bounds> for Bounds {
         return Bounds::new(min, max);
     }
     fn expand(&mut self, b:Bounds){
-        self.min = vec3(f32::min(self.min.x, b.min.x), f32::min(self.min.x, b.min.x), f32::min(self.min.x, b.min.x));
-        self.max = vec3(f32::max(self.max.x, b.max.x), f32::max(self.min.x, b.min.x), f32::max(self.min.x, b.min.x));
+        self.min = vec3(f32::min(self.min.x, b.min.x), f32::min(self.min.y, b.min.y), f32::min(self.min.z, b.min.z));
+        self.max = vec3(f32::max(self.max.x, b.max.x), f32::max(self.max.y, b.max.y), f32::max(self.max.z, b.max.z));
     }
 }
 
@@ -30,23 +30,27 @@ impl Union<vec3> for Bounds {
     }
     fn expand(&mut self, b:vec3) {
         self.min = vec3(f32::min(self.min.x, b.x), f32::min(self.min.x, b.x), f32::min(self.min.x, b.x));
-        self.max = vec3(f32::max(self.max.x, b.x), f32::max(self.min.x, b.x), f32::max(self.min.x, b.x));
+        self.max = vec3(f32::max(self.max.x, b.x), f32::max(self.max.x, b.x), f32::max(self.max.x, b.x));
     }
 }
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone)]
 pub struct Bounds {
     pub min:vec3,
     pub max:vec3,
 }
 
+impl_fmt!(Bounds{min max}, "min{} max{}");
+
+impl Default for Bounds {
+    fn default() -> Self {
+        Bounds { min:vec3::max(), max:vec3::min() }
+    }
+}
+
 impl Bounds {
     pub fn new(min:vec3, max:vec3) -> Self {
         Bounds { min:min, max:max }
-    }
-    
-    pub fn default() -> Self {
-        Bounds { min:vec3::min(), max:vec3::max() }
     }
 
     pub fn center(&self) -> vec3 {

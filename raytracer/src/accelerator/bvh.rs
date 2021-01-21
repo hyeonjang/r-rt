@@ -11,44 +11,6 @@ pub enum Method{
     EQUAL,
     MIDDLE,
 }
- 
-#[repr(packed(32))]
-pub struct Node {
-    min:vec3,
-    max:vec3,
-    second_or_index:usize,
-    parent:u32, 
-    axis:u32,
-}
-
-impl Node {
-    pub fn new() -> Self {
-        Node { min:vec3::min(), max:vec3::max(), second_or_index:usize::default(), parent:u32::default(), axis:u32::default() }
-    }
-}
-
-pub struct BVH {
-    pub nodes:Vec<Node>,
-}
-
-impl BVH {
-    pub fn new() -> Self {
-        BVH { nodes:vec![], }
-    }
-    pub fn flatten_tree(bvh:&mut BVH, node:Option<&Box<BuildNode>>, offset:usize) -> usize {
-        let offset0 = offset+1;
-
-        let node = match node {
-            Some(s) => node.unwrap(),
-            None => return 0,
-        };
-
-        BVH::flatten_tree(bvh, node.l.as_ref(), offset0);
-        bvh.nodes[offset].second_or_index = BVH::flatten_tree(bvh, node.r.as_ref(), offset0);
-
-        return offset0;
-    }
-}
 
 ///////////////////////////////////////////////////////
 /// 2. BVH build information
@@ -64,16 +26,19 @@ type PrimitiveList = Vec<Primitive>;
 #[derive(Default)]
 pub struct BuildNode {
     bound : Bounds,
-    //center : vec3,
-    nprim : u32,
+    center : Bounds,
+    nprim : i32,
     axis : usize,
     l : Option<Box<BuildNode>>,
     r : Option<Box<BuildNode>>, 
 }
 
 impl BuildNode {
-    fn init_leaf(&self, first:i32, b:Bounds) -> Self {
-        BuildNode { bound:b, nprim:1, axis:1, l:None, r:None }
+    fn init_leaf(&self, n:i32, b:Bounds) -> Self {
+        BuildNode { bound:b, center:b, nprim:n, axis:1, l:None, r:None }
+    }
+    fn is_leaf(&self) -> bool {
+        return self.nprim > 0;
     }
     fn init_interior(&mut self, axis:usize, c0:Box<BuildNode>, c1:Box<BuildNode>) {
         self.bound = Bounds::bounds(c0.bound, c1.bound);
@@ -85,10 +50,9 @@ impl BuildNode {
 }
 
 struct BVHBuild {
+    method : Method,
     unordered_prmitives : PrimitiveList,
     ordered_primitives : PrimitiveList,
-    method : Method,
-    //memory_pool : 
 }
 
 impl BVHBuild {
@@ -105,30 +69,95 @@ impl BVHBuild {
         return (start+end)/2;
     }
 
-    fn build(&mut self, start:usize, end:usize) -> Box<BuildNode>     {
+    fn build(&mut self, start:usize, end:usize) -> Box<BuildNode> {
         let mut n:Box<BuildNode> = Box::new(BuildNode::default());
+
         let b_prim = &mut n.bound;
-        //let mut b_cent = &mut n.center;
+        let b_cent = &mut n.center;
         for i in start..end {
             b_prim.expand(self.unordered_prmitives[i].bound);
-            //b_cent.expand(self.unordered_prmitives[i].center);
+            b_cent.expand(self.unordered_prmitives[i].center);
         }
-        let dim = b_prim.max_extend() as usize;
+
+        println!("in build {}-{} {}", end, start, b_prim);
+
+        let dim = b_cent.max_extend() as usize;
         let nprim = end - start;
-        if nprim <= 1 {
+
+        if nprim==1 || b_cent.max[dim]==b_cent.min[dim] {
+            println!("leaf");
             self.ordered_primitives.push(self.unordered_prmitives[start].clone());
             return Box::new(n.init_leaf(self.unordered_prmitives[start].id, n.bound));
         }
-        let mut middle = (start+end)/2;
-        middle = match self.method {
+
+        let mid = match self.method {
             Method::SAH => BVHBuild::split_sah(),
             Method::EQUAL => BVHBuild::split_equal_counts(&mut self.unordered_prmitives, start, end, dim),
             Method::MIDDLE => BVHBuild::split_sah(),
         };
 
-        n.init_interior(dim, self.build(start, middle), self.build(middle, end));
+        n.init_interior(dim, self.build(start, mid), self.build(mid, end));
         return n;
      }
+}
+
+////////////////////////
+/// 3. Real BVH
+#[derive(Clone)]
+pub struct Node {
+    bound: Bounds,
+    second:usize,
+    parent:u32, 
+    axis:u32,
+}
+
+impl Node {
+    pub fn new() -> Self {
+        Node { bound:Bounds::default(), second:usize::default(), parent:u32::default(), axis:u32::default() }
+    }
+}
+
+pub struct BVH {
+    pub nodes:Vec<Node>,
+}
+
+impl BVH {
+    pub fn new() -> Self {
+        BVH { nodes:vec![], }
+    }
+    pub fn with_capacity(len:usize) -> Self {
+        BVH { nodes:Vec::with_capacity(len), }
+    }
+    pub fn len(&self) -> usize {
+        self.nodes.len()
+    }
+    pub fn resize(&mut self, len:usize) {
+        self.nodes.clear(); self.nodes.resize(len, Node::new());
+    }
+    pub fn capacity(&self) -> usize {
+        self.nodes.capacity()
+    }
+
+    pub fn flatten_tree(bvh:&mut BVH, node:Option<&Box<BuildNode>>, offset:&mut usize) -> usize {
+        *offset = *offset + 1;
+        let offset0 = *offset;
+
+        let node = match node {
+            Some(s) => node.unwrap(),
+            None => return 0,
+        };
+
+        bvh.nodes[*offset].bound = node.bound;
+
+        println!("{} {} {} {}", offset0, offset, bvh.nodes[*offset].second, bvh.nodes[*offset].bound);
+
+        if !node.is_leaf() {
+            BVH::flatten_tree(bvh, node.l.as_ref(), offset);
+            bvh.nodes[*offset].second = BVH::flatten_tree(bvh, node.r.as_ref(), offset);
+        }
+    
+        return offset0;
+    }
 }
 
 ////////////////////////////////////////////
@@ -137,39 +166,51 @@ impl Accelerator for BVH {
         return true;
     }
     fn build(&mut self, primitive:&Vec<Box<dyn Shape>>) {
+        
         for prim in primitive {
-            println!("{} {}", prim.bounds().min, prim.bounds().max);
+            println!("set {}", prim.bounds());
         }
 
-        let mut primitives:Vec<Primitive> = Vec::with_capacity(primitive.capacity());
-        println!("{:?}", primitives.capacity());
+        let mut primitives:Vec<Primitive> = Vec::with_capacity(primitive.len());
+        println!("primitives capacity {:?}", primitives.capacity());
+        
         for i in 0..primitives.capacity() {
             primitives.push(Primitive{ id:i as i32, bound:primitive[i].bounds(), center:primitive[i].bounds().center() });
         }
+
         let mut bvh_build = BVHBuild::new(&primitives, Method::EQUAL);
-        let root = bvh_build.build(0, primitives.len());
+
+        let len = primitives.len();
+        let root = bvh_build.build(0, len);
 
         for i in bvh_build.ordered_primitives {
-            println!("{}", i.bound.min);
+            println!("{}", i.bound);
         }
 
-        println!("start flatten");
 
-        BVH::flatten_tree(self, Some(&root), 0);
+        self.resize(10);
+        println!("start flatten {}", self.nodes.len());
 
+        let offset = BVH::flatten_tree(self, Some(&root), &mut 0);
+
+        println!("node start {}", offset);
         for node in &self.nodes {
-            println!("{}", node.second_or_index);
+            println!("{}", node.second);
         }
     }
 }
 
-pub fn create(primitives:&Vec<Box<dyn Shape>>) -> Box<BVH> {
-    let mut bvh = Box::new(BVH::new());
+pub fn Create(primitives:&Vec<Box<dyn Shape>>) -> Box<BVH> {
+    
+    let mut bvh = BVH::new();
+
+    println!("{} {}", primitives.len(), bvh.len());
+
     bvh.build(primitives);
 
     let unordered_prmitives = primitives;
 
-    return bvh;
+    return Box::new(bvh);
 }
 
 

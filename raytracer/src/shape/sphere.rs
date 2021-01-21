@@ -51,7 +51,7 @@ impl Shape for Sphere {
         h.mat_ptr = Arc::clone(&self.mat_ptr);
         return true;
     }
-    fn bounds( &self ) -> Bounds {
+    fn bounds(&self) -> Bounds {
         Bounds::new(self.center-vec3(self.radius, self.radius, self.radius), self.center+vec3(self.radius, self.radius, self.radius))
     }
 }

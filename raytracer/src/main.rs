@@ -1,3 +1,5 @@
+#[macro_use] 
+extern crate rxmath;
 extern crate image;
 
 // std
@@ -11,6 +13,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 // Custom crate
 use rxmath::vector::*;
 use rxmath::random::*;
+use rxmath::macros::*;
 
 // Current crate
 pub mod intersect;
@@ -67,7 +70,16 @@ pub fn random_scene(count:i8) -> ShapeList {
     let mut world = ShapeList::new();
 
     let ground_material = Arc::new(lambertian::new(vec3(0.5, 0.5, 0.5)));
-    world.push( Sphere{center:vec3(0f32, 1000f32, 0f32), radius:1000.0f32, mat_ptr:ground_material} );
+    //world.push( Sphere{center:vec3(0f32, 1000f32, 0f32), radius:1000.0f32, mat_ptr:ground_material} );
+
+    let material1 = Arc::new(dielectric::new(1.5));
+    world.push(Sphere::new(vec3(0.0, -1.0, 0.0), 1.0, material1));
+
+    let material2 = Arc::new(lambertian::new(vec3(0.4, 0.2, 0.1)));
+    world.push(Sphere::new(vec3(-4.0, -1.0, 0.1), 1.0, material2));
+
+    let material3 = Arc::new(metal::new(vec3(0.7, 0.6, 0.5), 0.0));
+    world.push(Sphere::new(vec3( 4.0, -1.0, 0.0), 1.0, material3));
 
     for a in -count..count {
         for b in -count..count {
@@ -81,7 +93,7 @@ pub fn random_scene(count:i8) -> ShapeList {
                     // diffuse
                     let albedo = vec3::random() * vec3::random();
                     sphere_material = Arc::new(lambertian::new(albedo));
-                    world.push(Sphere{center:center, radius:0.2, mat_ptr:sphere_material});
+                    world.push(Sphere::new(center, 0.2, sphere_material));
                 }
                 else if choose_mat < 0.95 {
                     let albedo = vec3::random_range(0.5, 1.0);
@@ -98,14 +110,7 @@ pub fn random_scene(count:i8) -> ShapeList {
         }
     }
 
-    let material1 = Arc::new(dielectric::new(1.5));
-    world.push(Sphere::new(vec3(0.0, -1.0, 0.0), 1.0, material1));
 
-    let material2 = Arc::new(lambertian::new(vec3(0.4, 0.2, 0.1)));
-    world.push(Sphere::new(vec3(-4.0, -1.0, 0.1), 1.0, material2));
-
-    let material3 = Arc::new(metal::new(vec3(0.7, 0.6, 0.5), 0.0));
-    world.push(Sphere::new(vec3( 4.0, -1.0, 0.0), 1.0, material3));
 
     return world;
 }
@@ -125,7 +130,7 @@ fn main() {
     // Material List
 
     // World
-    let mut world = random_scene(1);
+    let mut world = random_scene(0);
     let acc_start = Instant::now();
     world.acc_build(accelerator::AcceleratorType::BVH);
     let acc_end = acc_start.elapsed();

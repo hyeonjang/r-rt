@@ -1,5 +1,6 @@
 pub mod material;
 pub mod sphere;
+pub mod triangle;
 
 use crate::intersect::*;
 
@@ -7,7 +8,7 @@ use crate::accelerator::*;
 use bounds::*;
 
 // traits for all kind of Shapes
-pub trait Shape{
+pub trait Shape {
     fn intersect( &self, r:&ray, t_min:f32, t_max:f32, i:&mut hit ) -> bool;
     fn bounds( &self ) -> Bounds;
 }
@@ -45,8 +46,8 @@ impl ShapeList {
     }
     pub fn acc_build(&mut self, ty:AcceleratorType) {
         let acc = match ty {
-            AcceleratorType::BVH => bvh::create(&self.list),
-            AcceleratorType::kDTree => bvh::create(&self.list),
+            AcceleratorType::BVH => bvh::Create(&self.list),
+            AcceleratorType::kDTree => bvh::Create(&self.list),
         };
         self.acc = Some(acc);
     }

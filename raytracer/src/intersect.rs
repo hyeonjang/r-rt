@@ -5,7 +5,7 @@ use rxmath::vector::*;
 use crate::shape::material::*;
 
 pub trait Intersect {
-    fn intersect(r:&ray) -> bool;
+    fn intersect(&self) -> bool;
 }
 
 #[allow(non_camel_case_types)]

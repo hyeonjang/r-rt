@@ -79,13 +79,10 @@ impl BVHBuild {
             b_cent.expand(self.unordered_prmitives[i].center);
         }
 
-        println!("in build {}-{} {}", end, start, b_prim);
-
         let dim = b_cent.max_extend() as usize;
         let nprim = end - start;
 
         if nprim==1 || b_cent.max[dim]==b_cent.min[dim] {
-            println!("leaf");
             self.ordered_primitives.push(self.unordered_prmitives[start].clone());
             return Box::new(n.init_leaf(self.unordered_prmitives[start].id, n.bound));
         }
@@ -138,24 +135,21 @@ impl BVH {
         self.nodes.capacity()
     }
 
-    pub fn flatten_tree(bvh:&mut BVH, node:Option<&Box<BuildNode>>, offset:&mut usize) -> usize {
+    pub fn flatten_tree(&mut self, node:Option<&Box<BuildNode>>, offset:&mut isize) -> isize {
+        let node = match node {
+            Some(s) => node.unwrap(),
+            None => return 0, //@@todo primitivie id
+        };
+
         *offset = *offset + 1;
         let offset0 = *offset;
 
-        let node = match node {
-            Some(s) => node.unwrap(),
-            None => return 0,
-        };
-
-        bvh.nodes[*offset].bound = node.bound;
-
-        println!("{} {} {} {}", offset0, offset, bvh.nodes[*offset].second, bvh.nodes[*offset].bound);
-
+        self.nodes[*offset as usize].bound = node.bound;
+        
         if !node.is_leaf() {
-            BVH::flatten_tree(bvh, node.l.as_ref(), offset);
-            bvh.nodes[*offset].second = BVH::flatten_tree(bvh, node.r.as_ref(), offset);
+            self.flatten_tree(node.l.as_ref(), offset);
+            self.nodes[offset0 as usize].second = self.flatten_tree(node.r.as_ref(), offset) as usize;
         }
-    
         return offset0;
     }
 }
@@ -167,12 +161,7 @@ impl Accelerator for BVH {
     }
     fn build(&mut self, primitive:&Vec<Box<dyn Shape>>) {
         
-        for prim in primitive {
-            println!("set {}", prim.bounds());
-        }
-
         let mut primitives:Vec<Primitive> = Vec::with_capacity(primitive.len());
-        println!("primitives capacity {:?}", primitives.capacity());
         
         for i in 0..primitives.capacity() {
             primitives.push(Primitive{ id:i as i32, bound:primitive[i].bounds(), center:primitive[i].bounds().center() });
@@ -183,33 +172,15 @@ impl Accelerator for BVH {
         let len = primitives.len();
         let root = bvh_build.build(0, len);
 
-        for i in bvh_build.ordered_primitives {
-            println!("{}", i.bound);
-        }
-
-
-        self.resize(10);
-        println!("start flatten {}", self.nodes.len());
-
-        let offset = BVH::flatten_tree(self, Some(&root), &mut 0);
-
-        println!("node start {}", offset);
-        for node in &self.nodes {
-            println!("{}", node.second);
-        }
+        self.resize(5); //@@todo
+        BVH::flatten_tree(self, Some(&root), &mut -1);
     }
 }
 
+#[allow(non_snake_case)]
 pub fn Create(primitives:&Vec<Box<dyn Shape>>) -> Box<BVH> {
-    
     let mut bvh = BVH::new();
-
-    println!("{} {}", primitives.len(), bvh.len());
-
     bvh.build(primitives);
-
-    let unordered_prmitives = primitives;
-
     return Box::new(bvh);
 }
 

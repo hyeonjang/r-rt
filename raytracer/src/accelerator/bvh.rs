@@ -6,7 +6,7 @@ use bounds::*;
 
 ////////////////////////////////////////////////////
 /// 1. Interface and essential BVH information.
-pub enum Method{
+pub enum Method {
     SAH,
     EQUAL,
     MIDDLE,
@@ -155,10 +155,14 @@ impl BVH {
 }
 
 ////////////////////////////////////////////
-impl Accelerator for BVH {
-    fn hit(&self) -> bool {
+
+impl Intersect for BVH {
+    fn intersect(&self) -> bool {
         return true;
     }
+}
+
+impl Accelerator for BVH {
     fn build(&mut self, primitive:&Vec<Box<dyn Shape>>) {
         
         let mut primitives:Vec<Primitive> = Vec::with_capacity(primitive.len());

@@ -53,21 +53,24 @@ impl Default for Bounds {
 impl Intersect for Bounds {
     // intersection
     fn intersect(&self, r:&Ray, h:&mut Hit) -> bool {
+        let mut t_min = 0.0; let mut t_max = r.t_max;
         for i in 0..3 {
-            let inv_d = 1.0 / r.dir[i];
+            let inv_d = 1.0 / r.d[i];
             let mut t0 = (vec3::min()[i] - r.o[i]) * inv_d;
             let mut t1 = (vec3::max()[i] - r.o[i]) * inv_d;
             if inv_d<0.0 { std::mem::swap(&mut t0, &mut t1); }
-            h.t_min = if t0>h.t_min { t0 } else { h.t_min };
-            h.t_max = if t1<h.t_max { t1 } else { h.t_max };
-            if h.t_max<=h.t_min { return false }
+            t_min = if t0>t_min { t0 } else { t_min };
+            t_max = if t1<t_max { t1 } else { t_max };
+            if t_min>t_max { return false }
         }
+        h.t_min = t_min;
+        h.t_max = t_max;
         return true;
     }
     // optimized code by Andrew Kensler at Pixar
     // fn intersect(r:Ray, mut t_min:f32, mut t_max:f32) -> bool {
     //     for i in 0..3 {
-    //         let inv_d = 1.0 / r.dir[i];
+    //         let inv_d = 1.0 / r.d[i];
     //         let mut t0 = (vec3::min()[i] - r.o[i]) * inv_d;
     //         let mut t1 = (vec3::max()[i] - r.o[i]) * inv_d;
     //         if inv_d<0.0 { std::mem::swap(&mut t0, &mut t1); }

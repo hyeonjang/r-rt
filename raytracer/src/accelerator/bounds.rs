@@ -1,6 +1,8 @@
 use rxmath::vector::*;
 
 use crate::intersect::*;
+use hit::*;
+use ray::*;
 
 pub trait Union<T>{
     type Output;
@@ -48,6 +50,35 @@ impl Default for Bounds {
     }
 }
 
+impl Intersect for Bounds {
+    // intersection
+    fn intersect(&self, r:&Ray, h:&mut Hit) -> bool {
+        for i in 0..3 {
+            let inv_d = 1.0 / r.dir[i];
+            let mut t0 = (vec3::min()[i] - r.o[i]) * inv_d;
+            let mut t1 = (vec3::max()[i] - r.o[i]) * inv_d;
+            if inv_d<0.0 { std::mem::swap(&mut t0, &mut t1); }
+            h.t_min = if t0>h.t_min { t0 } else { h.t_min };
+            h.t_max = if t1<h.t_max { t1 } else { h.t_max };
+            if h.t_max<=h.t_min { return false }
+        }
+        return true;
+    }
+    // optimized code by Andrew Kensler at Pixar
+    // fn intersect(r:Ray, mut t_min:f32, mut t_max:f32) -> bool {
+    //     for i in 0..3 {
+    //         let inv_d = 1.0 / r.dir[i];
+    //         let mut t0 = (vec3::min()[i] - r.o[i]) * inv_d;
+    //         let mut t1 = (vec3::max()[i] - r.o[i]) * inv_d;
+    //         if inv_d<0.0 { std::mem::swap(&mut t0, &mut t1); }
+    //         t_min = if t0>t_min { t0 } else { t_min };
+    //         t_max = if t1<t_max { t1 } else { t_max };
+    //         if t_max<=t_min { return false }
+    //     }
+    //     return true;
+    // }
+}
+
 impl Bounds {
     pub fn new(min:vec3, max:vec3) -> Self {
         Bounds { min:min, max:max }
@@ -64,20 +95,5 @@ impl Bounds {
     pub fn max_extend(&self) -> i32 {
         let e = self.size();
         return if e.x>e.y && e.x>e.z { 0 } else if e.y>e.z { 1 } else { 2 };
-    }
-
-    // intersection 
-    // optimized code by Andrew Kensler at Pixar
-    pub fn hit(r:ray, mut t_min:f32, mut t_max:f32) -> bool {
-        for i in 0..3 {
-            let inv_d = 1.0 / r.dir[i];
-            let mut t0 = (vec3::min()[i] - r.o[i]) * inv_d;
-            let mut t1 = (vec3::max()[i] - r.o[i]) * inv_d;
-            if inv_d<0.0 { std::mem::swap(&mut t0, &mut t1); }
-            t_min = if t0>t_min { t0 } else { t_min };
-            t_max = if t1<t_max { t1 } else { t_max };
-            if t_max<=t_min { return false }
-        }
-        return true;
     }
 }

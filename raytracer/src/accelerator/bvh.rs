@@ -4,6 +4,10 @@ use rxmath::vector::*;
 use crate::accelerator::*;
 use bounds::*;
 
+use crate::intersect::*;
+use ray::*;
+use hit::*;
+
 ////////////////////////////////////////////////////
 /// 1. Interface and essential BVH information.
 pub enum Method {
@@ -24,7 +28,7 @@ struct Primitive {
 type PrimitiveList = Vec<Primitive>;
 
 #[derive(Default)]
-pub struct BuildNode {
+struct BuildNode {
     bound : Bounds,
     center : Bounds,
     nprim : i32,
@@ -34,11 +38,11 @@ pub struct BuildNode {
 }
 
 impl BuildNode {
-    fn init_leaf(&self, n:i32, b:Bounds) -> Self {
-        BuildNode { bound:b, center:b, nprim:n, axis:1, l:None, r:None }
-    }
     fn is_leaf(&self) -> bool {
         return self.nprim > 0;
+    }
+    fn init_leaf(&self, n:i32, b:Bounds) -> Self {
+        BuildNode { bound:b, center:b, nprim:n, axis:3, l:None, r:None }
     }
     fn init_interior(&mut self, axis:usize, c0:Box<BuildNode>, c1:Box<BuildNode>) {
         self.bound = Bounds::bounds(c0.bound, c1.bound);
@@ -46,6 +50,9 @@ impl BuildNode {
         self.r = Some(c1);
         self.nprim = 0;
         self.axis = axis;
+    }
+    fn return_id(&self) -> i32 {
+        self.nprim
     }
 }
 
@@ -112,18 +119,19 @@ impl Node {
     pub fn new() -> Self {
         Node { bound:Bounds::default(), second:usize::default(), parent:u32::default(), axis:u32::default() }
     }
+    pub fn is_leaf(&self) -> bool {
+        return self.axis == 3;
+    }
 }
 
 pub struct BVH {
     pub nodes:Vec<Node>,
+    pub mesh:*mut ShapeList,
 }
 
 impl BVH {
-    pub fn new() -> Self {
-        BVH { nodes:vec![], }
-    }
-    pub fn with_capacity(len:usize) -> Self {
-        BVH { nodes:Vec::with_capacity(len), }
+    pub fn new(mesh:*mut ShapeList) -> Self {
+        BVH { nodes:vec![], mesh:mesh }
     }
     pub fn len(&self) -> usize {
         self.nodes.len()
@@ -134,7 +142,6 @@ impl BVH {
     pub fn capacity(&self) -> usize {
         self.nodes.capacity()
     }
-
     pub fn flatten_tree(&mut self, node:Option<&Box<BuildNode>>, offset:&mut isize) -> isize {
         let node = match node {
             Some(s) => node.unwrap(),
@@ -145,20 +152,13 @@ impl BVH {
         let offset0 = *offset;
 
         self.nodes[*offset as usize].bound = node.bound;
+        self.nodes[*offset as usize].axis = node.axis as u32;
         
         if !node.is_leaf() {
             self.flatten_tree(node.l.as_ref(), offset);
             self.nodes[offset0 as usize].second = self.flatten_tree(node.r.as_ref(), offset) as usize;
         }
         return offset0;
-    }
-}
-
-////////////////////////////////////////////
-
-impl Intersect for BVH {
-    fn intersect(&self) -> bool {
-        return true;
     }
 }
 
@@ -181,24 +181,68 @@ impl Accelerator for BVH {
     }
 }
 
+////////////////////////////////////////////
+impl Intersect for BVH {
+    fn intersect(&self, r:&Ray, h:&mut Hit) -> bool {
+        if self.nodes.is_empty() { return false; }
+        let mut hit = false;
+        let mut idx = 0;
+        let mut to = 0;
+        let invDir = vec3(1.0/r.dir.x, 1.0/r.dir.y, 1.0/r.dir.z);
+        let dirIsNeg = vec3(invDir.x<0.0, invDir.y<0.0, invDir.z<0.0); 
+        let mut stack = [0;64];
+        loop {
+            let mut node = &self.nodes[idx];
+            if node.bound.intersect(r, h) {
+                if node.is_leaf() {
+                    unsafe {
+                        if (*self.mesh).list[node.second].intersect(r, h) {
+                            hit = true;
+                            if to <= 0 { break; }
+                            to -= 1;
+                            idx = stack[to];
+                        }
+                    }
+                } else {
+                    if dirIsNeg[node.axis as usize] {
+                        to += 1;
+                        stack[to] = idx + 1;
+                        idx = node.second;
+                    }
+                    else {
+                        to += 1;
+                        stack[to] = node.second;
+                        idx = idx + 1;
+                    }
+                }
+            } else {
+                if to == 0 { break; }
+                to -= 1;
+                idx = stack[to];
+            }
+        }
+        return hit;
+    }
+}
+
 #[allow(non_snake_case)]
-pub fn Create(primitives:&Vec<Box<dyn Shape>>) -> Box<BVH> {
-    let mut bvh = BVH::new();
+pub fn Create(mesh:*mut ShapeList, primitives:&Vec<Box<dyn Shape>>) -> Box<BVH> {
+    let mut bvh = BVH::new(mesh);
     bvh.build(primitives);
     return Box::new(bvh);
 }
 
 
 #[cfg(test)]
-mod tests {
+mod tests { 
 
-use crate::bvh::*;
+// use crate::bvh::*;
 
-    #[test]
-    fn it_works() {
-        println!("[raytracer-bvh] testing module");
+//     #[test]
+//     fn it_works() {
+//         println!("[raytracer-bvh] testing module");
 
-        let one_node = Node::new();
-        assert_eq!(32, std::mem::size_of_val(&one_node));
-    }
+//         let one_node = Node::new();
+//         assert_eq!(32, std::mem::size_of_val(&one_node));
+//     }
 }

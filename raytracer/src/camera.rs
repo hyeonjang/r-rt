@@ -1,7 +1,7 @@
 use rxmath::vector::*;
 use rxmath::random::*;
 
-use crate::intersect::*;
+use crate::intersect::ray::*;
 use crate::sample::*;
 
 #[derive(Default, Copy, Clone)]
@@ -37,10 +37,10 @@ impl Camera {
         return Camera{ origin:origin, horizontal:horizontal, vertical:vertical, lower_left_corner:lower_left_corner, w:w, u:u, v:v, lens_radius:lens_radius, time0:time0, time1:time1 }
     }
 
-    pub fn get_ray(&self, s:f32, t:f32) -> ray{
+    pub fn get_ray(&self, s:f32, t:f32) -> Ray{
         let rd = random_unit_disk()*self.lens_radius;
         let offset = self.u*rd.x + self.v*rd.y;
 
-        return ray{o:self.origin+offset, dir:(self.lower_left_corner+self.horizontal*s+self.vertical*t-self.origin-offset),tm:random_range_f32(self.time0, self.time1)}
+        return Ray{o:self.origin+offset, dir:(self.lower_left_corner+self.horizontal*s+self.vertical*t-self.origin-offset),tm:random_range_f32(self.time0, self.time1)}
     }
 } 

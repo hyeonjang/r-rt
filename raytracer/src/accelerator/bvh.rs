@@ -31,7 +31,7 @@ type PrimitiveList = Vec<Primitive>;
 struct BuildNode {
     bound : Bounds,
     center : Bounds,
-    nprim : i32,
+    id : i32,
     axis : usize,
     l : Option<Box<BuildNode>>,
     r : Option<Box<BuildNode>>, 
@@ -39,20 +39,20 @@ struct BuildNode {
 
 impl BuildNode {
     fn is_leaf(&self) -> bool {
-        return self.nprim > 0;
+        return self.axis == 3;
     }
-    fn init_leaf(&self, n:i32, b:Bounds) -> Self {
-        BuildNode { bound:b, center:b, nprim:n, axis:3, l:None, r:None }
+    fn init_leaf(&self, id:i32, b:Bounds) -> Self {
+        BuildNode { bound:b, center:b, id:id, axis:3, l:None, r:None }
     }
     fn init_interior(&mut self, axis:usize, c0:Box<BuildNode>, c1:Box<BuildNode>) {
         self.bound = Bounds::bounds(c0.bound, c1.bound);
         self.l = Some(c0);
         self.r = Some(c1);
-        self.nprim = 0;
+        self.id = 0;
         self.axis = axis;
     }
     fn return_id(&self) -> i32 {
-        self.nprim
+        self.id
     }
 }
 
@@ -151,6 +151,7 @@ impl BVH {
         *offset = *offset + 1;
         let offset0 = *offset;
 
+        self.nodes[*offset as usize].second = node.id as usize;
         self.nodes[*offset as usize].bound = node.bound;
         self.nodes[*offset as usize].axis = node.axis as u32;
         
@@ -188,35 +189,33 @@ impl Intersect for BVH {
         let mut hit = false;
         let mut idx = 0;
         let mut to = 0;
-        let invDir = vec3(1.0/r.dir.x, 1.0/r.dir.y, 1.0/r.dir.z);
-        let dirIsNeg = vec3(invDir.x<0.0, invDir.y<0.0, invDir.z<0.0); 
+        let inv_d = vec3(1.0/r.d.x, 1.0/r.d.y, 1.0/r.d.z);
+        let d_neg = vec3(inv_d.x<0.0, inv_d.y<0.0, inv_d.z<0.0); 
         let mut stack = [0;64];
         loop {
-            let mut node = &self.nodes[idx];
+            let node = &self.nodes[idx];
             if node.bound.intersect(r, h) {
                 if node.is_leaf() {
                     unsafe {
-                        if (*self.mesh).list[node.second].intersect(r, h) {
-                            hit = true;
-                            if to <= 0 { break; }
-                            to -= 1;
-                            idx = stack[to];
-                        }
+                        if (*self.mesh).list[node.second].intersect(r, h) { println!("unsafe"); hit = true; }
+                        println!("{}", node.second);
                     }
+                    if to == 0 { println!("break"); break; }
+                    to -= 1;
+                    idx = stack[to];
                 } else {
-                    if dirIsNeg[node.axis as usize] {
+                    if d_neg[node.axis as usize] {
                         to += 1;
                         stack[to] = idx + 1;
                         idx = node.second;
-                    }
-                    else {
+                    } else {
                         to += 1;
                         stack[to] = node.second;
                         idx = idx + 1;
                     }
                 }
             } else {
-                if to == 0 { break; }
+                if to == 0 {  println!("break"); break; }
                 to -= 1;
                 idx = stack[to];
             }

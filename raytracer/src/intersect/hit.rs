@@ -21,7 +21,7 @@ impl std::default::Default for Hit {
         Hit { 
                 pos:vec3::default(), 
                 norm:vec3::default(), 
-                t_min:0.0, 
+                t_min:f32::MAX, 
                 t_max:f32::MAX, 
                 front:true, 
                 mat_ptr:Arc::new(lambertian::new(vec3(0.0, 0.0, 0.0)))
@@ -31,7 +31,7 @@ impl std::default::Default for Hit {
 
 impl Hit {
     #[inline] pub fn set_face_normal(&mut self, r: &Ray, on:vec3) {
-        if dot(r.dir, on) > 0.0 {
+        if dot(r.d, on) > 0.0 {
             self.norm = - on;
             self.front = false;
         } else {

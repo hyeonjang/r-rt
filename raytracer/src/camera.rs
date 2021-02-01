@@ -41,6 +41,11 @@ impl Camera {
         let rd = random_unit_disk()*self.lens_radius;
         let offset = self.u*rd.x + self.v*rd.y;
 
-        return Ray{o:self.origin+offset, dir:(self.lower_left_corner+self.horizontal*s+self.vertical*t-self.origin-offset),tm:random_range_f32(self.time0, self.time1)}
+        return Ray{ 
+            o:self.origin+offset, 
+            d:(self.lower_left_corner+self.horizontal*s+self.vertical*t-self.origin-offset),
+            t_max:f32::MAX,
+            tm:random_range_f32(self.time0, self.time1)
+        }
     }
 } 

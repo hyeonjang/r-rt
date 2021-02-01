@@ -52,8 +52,8 @@ pub fn ray_color(r:&Ray, objects:&ShapeList, depth:u32) -> vec3 {
         return vec3(0f32, 0f32, 0f32);
     }
 
-    let unit_direction = normalize(r.dir);
-    let t = 0.5*(unit_direction.y + 1.0);
+    let unit_dection = normalize(r.d);
+    let t = 0.5*(unit_dection.y + 1.0);
     return vec3(1.0, 1.0, 1.0)*(1.0-t) + vec3(0.5, 0.7, 1.0)*t;
 }
 
@@ -73,7 +73,7 @@ fn main() {
     let imgx:u32 = 400;
     let imgy:u32 = (imgx as f32/aspect_ratio) as u32;
     let sample_count:u64 = 4;
-    let max_depth:u64= 1;
+    let max_depth:u64= 3;
 
     // Create a new ImgBuf with width: imgx and height: imgy
     let mut imgbuf = image::ImageBuffer::new(imgx as u32, imgy as u32);
@@ -83,7 +83,7 @@ fn main() {
     // World
     let mut world = random_scene(0);
     let acc_start = Instant::now();
-    //world.acc_build(accelerator::AcceleratorType::BVH);
+    world.acc_build(accelerator::AcceleratorType::BVH);
     let acc_end = acc_start.elapsed();
     println!("[{}] accelerator building duration:{:?}", NAME, acc_end);
 
@@ -120,7 +120,7 @@ fn main() {
     let duration = start.elapsed();
     println!("[{}] time duration:{:?}", NAME, duration);
 
-    let current_dir = std::env::current_dir().unwrap().to_str().unwrap().to_owned();
-    let path = format!("{}/result/{}.png", current_dir, get_date());
+    let current_d = std::env::current_dir().unwrap().to_str().unwrap().to_owned();
+    let path = format!("{}/result/{}.png", current_d, get_date());
     imgbuf.save(path).unwrap();
 }

@@ -2,12 +2,13 @@ use rxmath::vector::*;
 use rxmath::random::*;
 
 use crate::sample::*;
-use crate::intersect::*;
+use crate::intersect::ray::*;
+use crate::intersect::hit::*;
 
 /// material
 #[allow(non_camel_case_types)]
 pub trait Material {
-    fn scatter(&self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool;
+    fn scatter(&self, r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray) -> bool;
 }
 
 #[allow(non_camel_case_types)]
@@ -45,48 +46,48 @@ impl dielectric {
 }
 
 impl Material for lambertian {
-    fn scatter(&self, _r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
-        let mut scatter_direction = h.norm + random_unit_vector();
+    fn scatter(&self, _r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray) -> bool{
+        let mut scatter_dection = h.norm + random_unit_vector();
 
-        if scatter_direction.near_zero() {
-            scatter_direction = h.norm;
+        if scatter_dection.near_zero() {
+            scatter_dection = h.norm;
         }
 
-        *scattered = ray::new(h.pos, scatter_direction, None);
+        *scattered = Ray::new(h.pos, scatter_dection, None);
         *attenuation = self.albedo;
         return true;
     }
 }
 
 impl Material for metal {
-    fn scatter(&self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
-        let reflected = reflect(r.dir.normalize(), h.norm);
-        *scattered = ray::new(h.pos, reflected + random_unit_sphere()*self.fuzz, None);
+    fn scatter(&self, r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray) -> bool{
+        let reflected = reflect(r.d.normalize(), h.norm);
+        *scattered = Ray::new(h.pos, reflected + random_unit_sphere()*self.fuzz, None);
         *attenuation = self.albedo;
-        return dot(scattered.dir, h.norm) > 0.0;
+        return dot(scattered.d, h.norm) > 0.0;
     }
 }
 
 impl Material for dielectric {
-    fn scatter(&self, r:&ray, h:&hit, attenuation:&mut vec3, scattered:&mut ray) -> bool{
+    fn scatter(&self, r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray) -> bool{
         *attenuation = vec3(1.0, 1.0, 1.0);
         let refraction_ratio = { if h.front { 1.0/self.ir } else { self.ir } };
 
-        let unit_direction = normalize(r.dir);
-        let cos_theta = f32::min(dot(-unit_direction, h.norm), 1.0);
+        let unit_dection = normalize(r.d);
+        let cos_theta = f32::min(dot(-unit_dection, h.norm), 1.0);
         let sin_theta = f32::sqrt(1.0-cos_theta*cos_theta);
 
         let cannot_refract = refraction_ratio*sin_theta > 1.0;
-        let direction:vec3;
+        let dection:vec3;
 
         if cannot_refract || dielectric::reflectance(cos_theta, refraction_ratio) > random_f32() {
-            direction = reflect(unit_direction, h.norm);
+            dection = reflect(unit_dection, h.norm);
         }
         else {
-            direction = refract(unit_direction, h.norm, refraction_ratio);
+            dection = refract(unit_dection, h.norm, refraction_ratio);
         }
 
-        *scattered = ray::new(h.pos, direction, None);
+        *scattered = Ray::new(h.pos, dection, None);
         return true;
     }
 }

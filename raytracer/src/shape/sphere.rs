@@ -4,12 +4,12 @@ use std::sync::Arc;
 // Custom crate
 use rxmath::vector::*;
 
-// out direc
 use crate::intersect::*;
+use hit::*;
+use ray::*;
 
-// in direc
 use crate::shape::*;
-use crate::shape::material::*;
+use material::*;
 
 // 1. Sphere
 pub struct Sphere {
@@ -24,12 +24,12 @@ impl Sphere {
     }
 }
 
-impl Shape for Sphere {
-    fn intersect( &self, r:&ray, t_min:f32, t_max:f32, h:&mut hit ) -> bool {
+impl Intersect for Sphere {
+    fn intersect( &self, r:&Ray, h:&mut Hit ) -> bool {
         // the simplified version
         let oc:vec3 = r.o - self.center;
-        let a = r.dir.length2();
-        let b = oc.dot(r.dir);
+        let a = r.d.length2();
+        let b = oc.dot(r.d);
         let c = oc.length2() - self.radius*self.radius;
         
         let discriminant = b*b - a*c;
@@ -37,20 +37,23 @@ impl Shape for Sphere {
         let sqrtd = f32::sqrt(discriminant);
 
         let mut root = (-b-sqrtd)/a;
-        if root<t_min || t_max<root {
+        if root<0.001 || h.t_max<root {
             root = (-b+sqrtd)/a;
-            if root<t_min || t_max<root {
+            if root<0.001 || h.t_max<root {
                 return false;
             }
         }
-
-        h.t = root;
-        h.pos = r.at(h.t);
+        println!("break");
+        h.t_min = root;
+        h.pos = r.at(h.t_min);
         let outward_normal = (h.pos - self.center)/self.radius;
         h.set_face_normal(r, outward_normal);
         h.mat_ptr = Arc::clone(&self.mat_ptr);
         return true;
     }
+}
+
+impl Shape for Sphere {
     fn bounds(&self) -> Bounds {
         Bounds::new(self.center-vec3(self.radius, self.radius, self.radius), self.center+vec3(self.radius, self.radius, self.radius))
     }

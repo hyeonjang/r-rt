@@ -22,28 +22,32 @@ impl Sphere {
     pub fn new(center:vec3, radius:f32, mat_ptr:Arc<dyn Material>) -> Self {
         Sphere { center:center, radius:radius, mat_ptr:mat_ptr }
     }
+    pub fn get_uv() {
+
+    }
 }
 
 impl Intersect for Sphere {
     fn intersect( &self, r:&Ray, h:&mut Hit ) -> bool {
         // the simplified version
+        let i:Hit = Hit::default();
         let oc:vec3 = r.o - self.center;
         let a = r.d.length2();
         let b = oc.dot(r.d);
         let c = oc.length2() - self.radius*self.radius;
         
         let discriminant = b*b - a*c;
-        if discriminant<0.0 { return false;}  
+        if discriminant<0.0 { return false; }  
         let sqrtd = f32::sqrt(discriminant);
 
         let mut root = (-b-sqrtd)/a;
-        if root<0.001 || h.t_max<root {
+        if root<0.001 || i.t_max<root {
             root = (-b+sqrtd)/a;
-            if root<0.001 || h.t_max<root {
+            if root<0.001 || i.t_max<root {
                 return false;
             }
         }
-        println!("break");
+
         h.t_min = root;
         h.pos = r.at(h.t_min);
         let outward_normal = (h.pos - self.center)/self.radius;
@@ -54,7 +58,7 @@ impl Intersect for Sphere {
 }
 
 impl Shape for Sphere {
-    fn bounds(&self) -> Bounds {
-        Bounds::new(self.center-vec3(self.radius, self.radius, self.radius), self.center+vec3(self.radius, self.radius, self.radius))
+    fn bounds(&self) -> Bounds3f {
+        Bounds3f::new(self.center-vec3(self.radius, self.radius, self.radius), self.center+vec3(self.radius, self.radius, self.radius))
     }
 }

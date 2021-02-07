@@ -11,7 +11,7 @@ use bounds::*;
 
 // traits for all kind of Shapes
 pub trait Shape : Intersect {
-    fn bounds( &self ) -> Bounds;
+    fn bounds( &self ) -> Bounds3f;
 }
 
 // ShapeList

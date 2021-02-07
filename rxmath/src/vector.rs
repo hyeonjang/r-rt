@@ -206,12 +206,15 @@ impl vec<Gvec4<f32>> for Gvec4<f32> {
 //////////////////////////////
 // 3. Final type aliasing
 #[allow(non_camel_case_types)] pub type vec2 = Gvec2<f32>;
+#[allow(non_camel_case_types)] pub type bvec2 = Gvec2<bool>;
 #[allow(non_camel_case_types)] pub type ivec2 = Gvec2<i32>;
 #[allow(non_camel_case_types)] pub type uvec2 = Gvec2<u32>;
 #[allow(non_camel_case_types)] pub type vec3 = Gvec3<f32>;
+#[allow(non_camel_case_types)] pub type bvec3 = Gvec3<bool>;
 #[allow(non_camel_case_types)] pub type ivec3 = Gvec3<i32>;
 #[allow(non_camel_case_types)] pub type uvec3 = Gvec3<u32>;
 #[allow(non_camel_case_types)] pub type vec4 = Gvec4<f32>;
+#[allow(non_camel_case_types)] pub type bvec4 = Gvec4<bool>;
 #[allow(non_camel_case_types)] pub type ivec4 = Gvec4<i32>;
 #[allow(non_camel_case_types)] pub type uvec4 = Gvec4<u32>;
 

@@ -4,7 +4,6 @@ extern crate image;
 
 // std
 use std::time::{Instant};
-use std::sync::Arc;
 
 // External create
 use chrono::{Utc};
@@ -13,12 +12,12 @@ use indicatif::{ProgressBar, ProgressStyle};
 // Custom crate
 use rxmath::vector::*;
 use rxmath::random::*;
-use rxmath::macros::*;
 
 // Current crate
 pub mod intersect;
 pub mod camera;
 pub mod sample;
+pub mod intergrate;
 //pub mod thread;
 
 mod accelerator;
@@ -82,10 +81,10 @@ fn main() {
 
     // World
     let mut world = random_scene(0);
-    let acc_start = Instant::now();
-    world.acc_build(accelerator::AcceleratorType::BVH);
-    let acc_end = acc_start.elapsed();
-    println!("[{}] accelerator building duration:{:?}", NAME, acc_end);
+    //let acc_start = Instant::now();
+    //world.acc_build(accelerator::AcceleratorType::BVH);
+    //let acc_end = acc_start.elapsed();
+    //println!("[{}] accelerator building duration:{:?}", NAME, acc_end);
 
     // Camera
     let lookfrom = vec3(13.0, -2.0, 3.0);
@@ -95,7 +94,6 @@ fn main() {
     let aperture = 0.1;
 
     let cam = Camera::new(lookfrom, lookat, vup, 20.0, aspect_ratio, aperture, dist_to_focus, 0.0, 0.1);
-    // ** upside downed why
 
     // Ray Trace!
     let start = Instant::now();

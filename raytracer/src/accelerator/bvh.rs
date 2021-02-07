@@ -22,15 +22,15 @@ pub enum Method {
 struct Primitive {
     id:i32,
     center:vec3,
-    bound:Bounds,
+    bound:Bounds3f,
 }
 
 type PrimitiveList = Vec<Primitive>;
 
 #[derive(Default)]
 struct BuildNode {
-    bound : Bounds,
-    center : Bounds,
+    bound : Bounds3f,
+    center : Bounds3f,
     id : i32,
     axis : usize,
     l : Option<Box<BuildNode>>,
@@ -41,18 +41,15 @@ impl BuildNode {
     fn is_leaf(&self) -> bool {
         return self.axis == 3;
     }
-    fn init_leaf(&self, id:i32, b:Bounds) -> Self {
+    fn init_leaf(&self, id:i32, b:Bounds3f) -> Self {
         BuildNode { bound:b, center:b, id:id, axis:3, l:None, r:None }
     }
     fn init_interior(&mut self, axis:usize, c0:Box<BuildNode>, c1:Box<BuildNode>) {
-        self.bound = Bounds::bounds(c0.bound, c1.bound);
+        self.bound = Bounds3f::bounds(c0.bound, c1.bound);
         self.l = Some(c0);
         self.r = Some(c1);
-        self.id = 0;
+        self.id = -1;
         self.axis = axis;
-    }
-    fn return_id(&self) -> i32 {
-        self.id
     }
 }
 
@@ -109,15 +106,16 @@ impl BVHBuild {
 /// 3. Real BVH
 #[derive(Clone)]
 pub struct Node {
-    bound: Bounds,
-    second:usize,
-    parent:u32, 
+    bound: Bounds3f,
+    second:isize,
+    parent:u32,
+    id:usize,
     axis:u32,
 }
 
 impl Node {
     pub fn new() -> Self {
-        Node { bound:Bounds::default(), second:usize::default(), parent:u32::default(), axis:u32::default() }
+        Node { bound:Bounds3f::default(), id:usize::default(), second:isize::default(), parent:u32::default(), axis:u32::default() }
     }
     pub fn is_leaf(&self) -> bool {
         return self.axis == 3;
@@ -142,22 +140,23 @@ impl BVH {
     pub fn capacity(&self) -> usize {
         self.nodes.capacity()
     }
+    #[allow(private_in_public)]
     pub fn flatten_tree(&mut self, node:Option<&Box<BuildNode>>, offset:&mut isize) -> isize {
         let node = match node {
             Some(s) => node.unwrap(),
             None => return 0, //@@todo primitivie id
         };
 
-        *offset = *offset + 1;
+        *offset = *offset+1;
         let offset0 = *offset;
 
-        self.nodes[*offset as usize].second = node.id as usize;
+        self.nodes[*offset as usize].second = node.id as isize;
         self.nodes[*offset as usize].bound = node.bound;
         self.nodes[*offset as usize].axis = node.axis as u32;
         
         if !node.is_leaf() {
             self.flatten_tree(node.l.as_ref(), offset);
-            self.nodes[offset0 as usize].second = self.flatten_tree(node.r.as_ref(), offset) as usize;
+            self.nodes[offset0 as usize].second = self.flatten_tree(node.r.as_ref(), offset);
         }
         return offset0;
     }
@@ -167,7 +166,7 @@ impl Accelerator for BVH {
     fn build(&mut self, primitive:&Vec<Box<dyn Shape>>) {
         
         let mut primitives:Vec<Primitive> = Vec::with_capacity(primitive.len());
-        
+     
         for i in 0..primitives.capacity() {
             primitives.push(Primitive{ id:i as i32, bound:primitive[i].bounds(), center:primitive[i].bounds().center() });
         }
@@ -192,33 +191,33 @@ impl Intersect for BVH {
         let inv_d = vec3(1.0/r.d.x, 1.0/r.d.y, 1.0/r.d.z);
         let d_neg = vec3(inv_d.x<0.0, inv_d.y<0.0, inv_d.z<0.0); 
         let mut stack = [0;64];
-        loop {
+        'intersect : loop {
             let node = &self.nodes[idx];
             if node.bound.intersect(r, h) {
                 if node.is_leaf() {
                     unsafe {
-                        if (*self.mesh).list[node.second].intersect(r, h) { println!("unsafe"); hit = true; }
-                        println!("{}", node.second);
+                        if (*self.mesh).list[node.second as usize].intersect(r, h) { hit = true; }
                     }
-                    if to == 0 { println!("break"); break; }
+                    if to==0 { break 'intersect; }
                     to -= 1;
-                    idx = stack[to];
+                    idx = stack[to] as usize;
                 } else {
                     if d_neg[node.axis as usize] {
                         to += 1;
                         stack[to] = idx + 1;
-                        idx = node.second;
+                        idx = node.second as usize;
                     } else {
                         to += 1;
-                        stack[to] = node.second;
+                        stack[to] = node.second as usize;
                         idx = idx + 1;
                     }
                 }
             } else {
-                if to == 0 {  println!("break"); break; }
+                if to==0 { break 'intersect; }
                 to -= 1;
-                idx = stack[to];
+                idx = stack[to] as usize;
             }
+            if to==0 { break 'intersect; }
         }
         return hit;
     }

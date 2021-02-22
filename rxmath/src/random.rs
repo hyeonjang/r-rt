@@ -1,5 +1,19 @@
 use rand::distributions::{Distribution, Uniform};
 
+pub fn random_i32(x:i32, y:i32) -> i32 {
+    let mut rng = rand::thread_rng();
+    let uniform_range = Uniform::from(x..y);
+    let sampled = uniform_range.sample(&mut rng);
+    return sampled;
+}
+
+pub fn random_i64(x:i64, y:i64) -> i64 {
+    let mut rng = rand::thread_rng();
+    let uniform_range = Uniform::from(x..y);
+    let sampled = uniform_range.sample(&mut rng);
+    return sampled;
+}
+
 pub fn random_f32() -> f32 {
     let mut rng = rand::thread_rng();
     let uniform_range = Uniform::from(0.0..1.0);

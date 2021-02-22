@@ -61,17 +61,24 @@ impl Intersect for ShapeList {
 ////////////////
 /// example scene
 
+use std::sync::*;
 use rxmath::vector::*;
 use rxmath::random::*;
-use std::sync::*;
 use sphere::*;
 use material::*;
 
-pub fn random_scene(count:i8) ->ShapeList {
+use crate::texture::*;
+
+pub fn random_scene(count:i8) -> ShapeList {
     let mut world = ShapeList::new();
 
-    let ground_material = Arc::new(lambertian::new(vec3(0.5, 0.5, 0.5)));
-    world.push(Sphere{center:vec3(0f32, 1000f32, 0f32), radius:1000.0f32, mat_ptr:ground_material});
+    let checker = Arc::new(
+        Checker::new(
+            Arc::new(SolidColor::new(vec3(0.2,0.3,0.1))),
+            Arc::new(SolidColor::new(vec3(0.9,0.9,0.9))),
+        ));
+    world.push(Sphere{center:vec3(0f32, 1000f32, 0f32), radius:1000.0f32, mat_ptr:Arc::new(lambertian{ albedo:checker })});
+    //let ground_material = Arc::new(lambertian::new(vec3(0.5, 0.5, 0.5)));
 
     let material1 = Arc::new(dielectric::new(1.5));
     world.push(Sphere::new(vec3(0.0, -1.0, 0.0), 1.0, material1));
@@ -112,3 +119,27 @@ pub fn random_scene(count:i8) ->ShapeList {
     }
     return world;
 }
+
+pub fn two_spheres() -> ShapeList {
+    let mut world = ShapeList::new();
+    let checker = Arc::new(Checker::new(
+        Arc::new(SolidColor::new(vec3(0.2, 0.3, 0.1))), 
+        Arc::new(SolidColor::new(vec3(0.9, 0.9, 0.9))),
+            ));
+    
+    world.push(Sphere::new(vec3(0.0,-10.0,0.0), 10.0, Arc::new(lambertian { albedo:checker.clone() })));
+    world.push(Sphere::new(vec3(0.0, 10.0,0.0), 10.0, Arc::new(lambertian { albedo:checker.clone() })));
+
+    return world;
+}
+
+pub fn two_perlin_spheres() -> ShapeList {
+    let mut world = ShapeList::new();
+    
+    let pertext = Arc::new(Noise::new(4.0));
+    world.push(Sphere::new(vec3(0.0,1000.0,0.0), 1000.0, Arc::new(lambertian { albedo:pertext.clone() })));
+    world.push(Sphere::new(vec3(0.0,-2.0,0.0), 2.0, Arc::new(lambertian { albedo:pertext.clone() })));
+
+    return world;
+}
+

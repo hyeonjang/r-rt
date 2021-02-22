@@ -1,9 +1,13 @@
+use std::sync::*;
+
 use rxmath::vector::*;
 use rxmath::random::*;
 
 use crate::sample::*;
 use crate::intersect::ray::*;
 use crate::intersect::hit::*;
+
+use crate::texture::*;
 
 /// material
 #[allow(non_camel_case_types)]
@@ -13,7 +17,7 @@ pub trait Material {
 
 #[allow(non_camel_case_types)]
 pub struct lambertian {
-    pub albedo:vec3,
+    pub albedo:Arc<dyn Texture>,
 }
 
 #[allow(non_camel_case_types)]
@@ -29,7 +33,7 @@ pub struct dielectric {
 
 impl lambertian {
     pub fn new(v:vec3)->lambertian {
-        lambertian{ albedo:v }
+        lambertian{ albedo:Arc::new(SolidColor::new(v)) }
     }
 }
 
@@ -54,7 +58,7 @@ impl Material for lambertian {
         }
 
         *scattered = Ray::new(h.pos, scatter_dection, None);
-        *attenuation = self.albedo;
+        *attenuation = self.albedo.value(h.u, h.v, &h.pos);
         return true;
     }
 }

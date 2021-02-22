@@ -12,6 +12,8 @@ pub struct Hit {
     pub norm  : vec3,
     pub t_min : f32,
     pub t_max : f32,
+    pub u     : f32,
+    pub v     : f32,
     pub front : bool,
     pub mat_ptr : Arc<dyn Material>,
 }
@@ -19,10 +21,12 @@ pub struct Hit {
 impl std::default::Default for Hit {
     fn default() -> Hit {
         Hit { 
-                pos:vec3::default(), 
-                norm:vec3::default(), 
+                pos  :vec3::default(), 
+                norm :vec3::default(), 
                 t_min:f32::MAX, 
-                t_max:f32::MAX, 
+                t_max:f32::MAX,
+                u    :f32::MAX,
+                v    :f32::MAX,
                 front:true, 
                 mat_ptr:Arc::new(lambertian::new(vec3(0.0, 0.0, 0.0)))
             }

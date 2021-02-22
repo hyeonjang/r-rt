@@ -1,7 +1,22 @@
 mod tests {
 
+    use rxmath::vector::*;
     use rxmath::random::*;
     use image::*;
+
+    fn pdf(x:f64) -> f64 {
+        return 0.5*x;
+    }
+
+    fn integrate_squared_x() {
+        let N = 1000000;
+        let mut sum = 0.0;
+        for _ in 0..N {
+            let x = (random_range_f64(0.0, 4.0)).sqrt();
+            sum += x*x / pdf(x);
+        }
+        println!("I = {}", sum/N as f64);
+    }
 
     fn simple_mc() {
         let N = 1000000;
@@ -19,7 +34,8 @@ mod tests {
     #[test]
     fn name() {
 
-        simple_mc();
+        integrate_squared_x();
+        //simple_mc();
 
         unimplemented!();
     }

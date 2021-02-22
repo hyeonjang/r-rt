@@ -18,6 +18,7 @@ pub mod intersect;
 pub mod camera;
 pub mod sample;
 pub mod intergrate;
+pub mod texture;
 //pub mod thread;
 
 mod accelerator;
@@ -80,7 +81,9 @@ fn main() {
     // Material List
 
     // World
-    let mut world = random_scene(0);
+    //let mut world = random_scene(0);
+    //let mut world = two_spheres();
+    let mut world = two_perlin_spheres();
     //let acc_start = Instant::now();
     //world.acc_build(accelerator::AcceleratorType::BVH);
     //let acc_end = acc_start.elapsed();

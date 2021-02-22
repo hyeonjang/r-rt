@@ -92,7 +92,7 @@ impl Default for Bounds3f {
 
 impl Intersect for Bounds3f {
     // intersection
-    fn intersect(&self, r:&Ray, h:&mut Hit) -> bool {
+    fn intersect(&self, r:&Ray, t_min:f32, t_max:f32,h:&mut Hit) -> bool {
         let mut t_min = 0.0; let mut t_max = r.t_max;
         for i in 0..3 {
             let inv_d = 1.0 / r.d[i];

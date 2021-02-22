@@ -32,20 +32,21 @@ impl Sphere {
 }
 
 impl Intersect for Sphere {
-    fn intersect( &self, r:&Ray, h:&mut Hit ) -> bool {
+    fn intersect( &self, r:&Ray, t_min:f32, t_max:f32, h:&mut Hit ) -> bool {
         // the simplified version
         let oc:vec3 = r.o - self.center;
         let a = r.d.length2();
         let b = oc.dot(r.d);
         let c = oc.length2() - self.radius*self.radius;
         
-        let discriminant = b*b - a*c; if discriminant<0.0 { return false; }  
+        let discriminant = b*b - a*c; 
+        if discriminant<0.0 { return false; }  
         let sqrtd = f32::sqrt(discriminant);
 
         let mut root = (-b-sqrtd)/a;
-        if root<0.001 || h.t_max<root {
+        if root<t_min || t_max<root {
             root = (-b+sqrtd)/a;
-            if root<0.001 || h.t_max<root {
+            if root<t_min || t_max<root {
                 return false;
             }
         }
@@ -56,6 +57,7 @@ impl Intersect for Sphere {
         h.set_face_normal(r, outward_normal);
         self.get_uv(&outward_normal, &mut h.u, &mut h.v);
         h.mat_ptr = Arc::clone(&self.mat_ptr);
+        
         return true;
     }
 }

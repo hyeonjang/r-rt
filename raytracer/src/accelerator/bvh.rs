@@ -183,7 +183,7 @@ impl Accelerator for BVH {
 
 ////////////////////////////////////////////
 impl Intersect for BVH {
-    fn intersect(&self, r:&Ray, h:&mut Hit) -> bool {
+    fn intersect(&self, r:&Ray, t_min:f32, t_max:f32, h:&mut Hit) -> bool {
         if self.nodes.is_empty() { return false; }
         let mut hit = false;
         let mut idx = 0;
@@ -193,10 +193,10 @@ impl Intersect for BVH {
         let mut stack = [0;64];
         'intersect : loop {
             let node = &self.nodes[idx];
-            if node.bound.intersect(r, h) {
+            if node.bound.intersect(r, t_min, t_max, h) {
                 if node.is_leaf() {
                     unsafe {
-                        if (*self.mesh).list[node.second as usize].intersect(r, h) { hit = true; }
+                        if (*self.mesh).list[node.second as usize].intersect(r,t_min, t_max, h) { hit = true; }
                     }
                     if to==0 { break 'intersect; }
                     to -= 1;

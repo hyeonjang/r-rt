@@ -68,6 +68,7 @@ pub fn vec3<T>(_x:T, _y:T, _z:T) -> Gvec3<T> {
 pub fn vec4<T>(_x:T, _y:T, _z:T, _w:T) -> Gvec4<T> {
     Gvec4{ x:_x, y:_y, z:_z, w:_w }
 }
+
 // 0.0.2 Copy & Clone
 impl_cpy!(Gvec2<T>{ x y });
 impl_cpy!(Gvec3<T>{ x y z });
@@ -220,15 +221,15 @@ impl vec<Gvec4<f32>> for Gvec4<f32> {
 
 //////////////////////////////
 /// ** considering point type
-pub type Fpoint2 = Gvec2<f32>;
-pub type Ipoint2 = Gvec2<i32>;
-pub type Upoint2 = Gvec2<u32>;
-pub type Fpoint3 = Gvec3<f32>;
-pub type Ipoint3 = Gvec3<i32>;
-pub type Upoint3 = Gvec3<u32>;
-pub type Fpoint4 = Gvec4<f32>;
-pub type Ipoint4 = Gvec4<i32>;
-pub type Upoint4 = Gvec4<u32>;
+#[allow(non_camel_case_types)] pub type point2 = Gvec2<f32>;  
+#[allow(non_camel_case_types)] pub type ipoint2 = Gvec2<i32>;
+#[allow(non_camel_case_types)] pub type upoint2 = Gvec2<u32>;
+#[allow(non_camel_case_types)] pub type point3 = Gvec3<f32>;
+#[allow(non_camel_case_types)] pub type ipoint3 = Gvec3<i32>;
+#[allow(non_camel_case_types)] pub type upoint3 = Gvec3<u32>;
+#[allow(non_camel_case_types)] pub type point4 = Gvec4<f32>;
+#[allow(non_camel_case_types)] pub type ipoint4 = Gvec4<i32>;
+#[allow(non_camel_case_types)] pub type upoint4 = Gvec4<u32>;
 
 // exactly todo = array to vector copy
 //////////////////////////////

@@ -1,6 +1,7 @@
 pub mod material;
 pub mod sphere;
 pub mod triangle;
+pub mod rectangle;
 
 use crate::intersect::*;
 use ray::*;
@@ -39,15 +40,18 @@ impl ShapeList {
 }
 
 impl Intersect for ShapeList {
-    fn intersect(&self, r:&Ray, h:&mut Hit) -> bool {
+    fn intersect(&self, r:&Ray, t_min:f32, t_max:f32, h:&mut Hit) -> bool {
         match &self.acc {
-            Some(s) => { self.acc.as_ref().unwrap().intersect(r, h) },
+            Some(s) => { self.acc.as_ref().unwrap().intersect(r, t_min, t_max, h) },
             None => {
+                let mut i = Hit::default();
                 let mut hit = false;
+                let mut closest_so_far = t_max;
+
                 for object in &self.list {
-                    let mut i = Hit::default();
-                    if object.intersect(r, &mut i) && i.t_min<h.t_min {
+                    if object.intersect(r, t_min, closest_so_far, &mut i) {
                         hit = true;
+                        closest_so_far = i.t_min;
                         *h = i.clone();
                     }
                 }
@@ -64,10 +68,12 @@ impl Intersect for ShapeList {
 use std::sync::*;
 use rxmath::vector::*;
 use rxmath::random::*;
-use sphere::*;
-use material::*;
 
 use crate::texture::*;
+
+use material::*;
+use sphere::*;
+use rectangle::*;
 
 pub fn random_scene(count:i8) -> ShapeList {
     let mut world = ShapeList::new();
@@ -143,3 +149,17 @@ pub fn two_perlin_spheres() -> ShapeList {
     return world;
 }
 
+pub fn simple_light() -> ShapeList {
+    let mut world = ShapeList::new();
+
+    let pertext = Arc::new(Noise::new(4.0));
+    world.push(Sphere::new(vec3(0.0,1000.0,0.0), 1000.0, Arc::new(lambertian { albedo:pertext.clone() })));
+    world.push(Sphere::new(vec3(0.0,-2.0,0.0), 2.0, Arc::new(lambertian { albedo:pertext.clone() })));
+
+    let difflight = Arc::new(diffuse_light::new(vec3(4.0, 4.0, 4.0)));
+    world.push(Rectangle::new(3.0, 5.0, -1.0, -3.0, -2.0, difflight.clone()));
+    world.push(Sphere::new(vec3(0.0, -7.0, 0.0), 2.0, difflight.clone()));
+
+    return world;
+
+}

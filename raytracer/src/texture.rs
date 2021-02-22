@@ -41,7 +41,7 @@ impl Noise {
 
 impl Texture for Noise {
     fn value(&self, _u: f32, _v: f32, p:&vec3) -> vec3 {
-        return vec3(1.0,1.0,1.0)*self.noise.noise(p);
+        return vec3(1.0,1.0,1.0)*0.5*(1.0 + f32::sin(self.scale*p.z+10.0*self.noise.turb(*p, None)));
     }
 }
 
@@ -60,7 +60,7 @@ impl Texture for Checker {
 }
 
 struct Perlin {
-    ranfloat : Vec<f32>,
+    ranvec   : Vec<vec3>,
     perm_x   : Vec<i32>,
     perm_y   : Vec<i32>,
     perm_z   : Vec<i32>,
@@ -94,66 +94,99 @@ impl Perlin {
         for i in 0..2 {
             for j in 0..2 {
                 for k in 0..2 {
-                    accum += ((i as f32*u)+((1-i) as f32)*(1 as f32-u))*
-                             ((j as f32*v)+((1-j) as f32)*(1 as f32-v))*
-                             ((k as f32*w)+((1-k) as f32)*(1 as f32-w))*
+                    accum += ((i as f32*u)+((1-i) as f32)*(1.0-u))*
+                             ((j as f32*v)+((1-j) as f32)*(1.0-v))*
+                             ((k as f32*w)+((1-k) as f32)*(1.0-w))*
                              c[i][j][k]
                 }
             }
         }
+        return accum;
+    }
 
+    fn perlin_interp(c:[[[vec3;2];2];2], u:f32, v:f32, w:f32) -> f32{
+        let uu = u*u*(3.0-2.0*u);
+        let vv = v*v*(3.0-2.0*v);
+        let ww = w*w*(3.0-2.0*w);
+        let mut accum = 0.0;
+
+        for i in 0..2 {
+            for j in 0..2 {
+                for k in 0..2 {
+                    let weight_v = vec3(u-i as f32, v-j as f32, w-k as f32);
+                    accum += (i as f32*uu + (1-i) as f32*(1.0-uu))*
+                             (j as f32*vv + (1-j) as f32*(1.0-vv))*
+                             (k as f32*ww + (1-k) as f32*(1.0-ww))*
+                             dot(c[i][j][k], weight_v);
+                    }
+                }
+            }
         return accum;
     }
 
     pub fn new() -> Self {
         let point_count = Perlin::point_count();
-        let mut ranfloat = vec![0.0; Perlin::point_count()];
+        let mut ranvec = vec![vec3(0.0, 0.0, 0.0); Perlin::point_count()];
         for i in 0..point_count {
-            ranfloat[i as usize] = random_f32();
+            ranvec[i as usize] = vec3::random_range(-1.0, 1.0).normalize();
         }
         let perm_x = Perlin::perlin_generate_perm();
         let perm_y = Perlin::perlin_generate_perm();
         let perm_z = Perlin::perlin_generate_perm();
 
-        Perlin { ranfloat:ranfloat, perm_x:perm_x, perm_y:perm_y, perm_z:perm_z }
+        Perlin { ranvec:ranvec, perm_x:perm_x, perm_y:perm_y, perm_z:perm_z }
     }
 
     pub fn noise(&self, p:&vec3) -> f32 {
-        // let mut u = p.x - f32::floor(p.x);
-        // let mut v = p.y - f32::floor(p.y);
-        // let mut w = p.z - f32::floor(p.z);
+        let mut u = p.x - f32::floor(p.x);
+        let mut v = p.y - f32::floor(p.y);
+        let mut w = p.z - f32::floor(p.z);
 
-        // // u = u*u*(3.0-2.0*u);
-        // // v = v*v*(3.0-2.0*v);
-        // // w = w*w*(3.0-2.0*w);
+        u = u*u*(3.0-2.0*u);
+        v = v*v*(3.0-2.0*v);
+        w = w*w*(3.0-2.0*w);
 
-        // let i = f32::floor(p.x) as usize;
-        // let j = f32::floor(p.y) as usize;
-        // let k = f32::floor(p.z) as usize;
-        // let mut c = [[[0.0;2];2];2];
+        let i = f32::floor(p.x) as i32;
+        let j = f32::floor(p.y) as i32;
+        let k = f32::floor(p.z) as i32;
+        let mut c = [[[vec3(0.0, 0.0, 0.0);2];2];2];
 
-        // for di in 0..2 {
-        //     for dj in 0..2 {
-        //         for dk in 0..2 {
-        //             c[di][dj][dk] = self.ranfloat[
-        //                (self.perm_x[(i+di)&255]^
-        //                 self.perm_y[(j+dj)&255]^
-        //                 self.perm_z[(k+dk)&255]) as usize
-        //             ]
-        //         }
-        //     }
-        // }
+        for di in 0..2 {
+            for dj in 0..2 {
+                for dk in 0..2 {
+                    c[di][dj][dk] = self.ranvec[
+                       (self.perm_x[((i+di as i32)&255) as usize]^
+                        self.perm_y[((j+dj as i32)&255) as usize]^
+                        self.perm_z[((k+dk as i32)&255) as usize]) as usize
+                    ]
+                }
+            }
+        }
 
-        // return Perlin::trilinear_interp(c, u, v, w);
+        return Perlin::perlin_interp(c, u, v, w);
     
-        let i = ((4.0*p.x) as i32&255) as usize;
-        let j = ((4.0*p.y) as i32&255) as usize;
-        let k = ((4.0*p.z) as i32&255) as usize;
+        // let i = ((4.0*p.x) as i32&255) as usize;
+        // let j = ((4.0*p.y) as i32&255) as usize;
+        // let k = ((4.0*p.z) as i32&255) as usize;
 
-        return self.ranfloat[(self.perm_x[i]^self.perm_y[j]^self.perm_z[k]) as usize];
-
-    
+        //return self.ranfloat[(self.perm_x[i]^self.perm_y[j]^self.perm_z[k]) as usize];
     } 
 
+    pub fn turb(&self, p:vec3, depth:Option<i32>) -> f32 {
+        let mut accum = 0.0;
+        let mut temp_p = p;
+        let mut weight = 1.0;
 
+        let idx = match depth {
+            Some(d) => depth.unwrap(),
+            None => 7,
+        };
+
+        for _ in 0..idx {
+            accum += weight*self.noise(&temp_p);
+            weight *= 0.5;
+            temp_p *= 2.0;
+        }
+        return f32::abs(accum);
+    }
 }

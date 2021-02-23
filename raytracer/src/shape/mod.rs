@@ -157,7 +157,7 @@ pub fn simple_light() -> ShapeList {
     world.push(Sphere::new(vec3(0.0,-2.0,0.0), 2.0, Arc::new(lambertian { albedo:pertext.clone() })));
 
     let difflight = Arc::new(diffuse_light::new(vec3(4.0, 4.0, 4.0)));
-    world.push(Rectangle::new(3.0, 5.0, -1.0, -3.0, -2.0, difflight.clone()));
+    world.push(RectangleXY::new(3.0, 5.0, -3.0, -1.0, -2.0, difflight.clone()));
     world.push(Sphere::new(vec3(0.0, -7.0, 0.0), 2.0, difflight.clone()));
 
     return world;

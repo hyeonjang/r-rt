@@ -69,14 +69,13 @@ pub fn write_color(pixel_color:vec3, sample_count:u64) -> vec3 {
 fn main() {
 
     // Image
-    let aspect_ratio:f32 = 3.0/2.0;
-    let imgx:u32 = 400;
-    let imgy:u32 = (imgx as f32/aspect_ratio) as u32;
+    let mut aspect_ratio:f32 = 3.0/2.0;
+    let mut imgx:u32 = 400;
+    let mut imgy:u32 = (imgx as f32/aspect_ratio) as u32;
     let mut sample_count:u64 = 4;
-    let max_depth:u64= 3;
+    let max_depth:u64 = 5;
 
     // Create a new ImgBuf with width: imgx and height: imgy
-    let mut imgbuf = image::ImageBuffer::new(imgx as u32, imgy as u32);
 
     // Camera
     let mut lookfrom = vec3(13.0, -2.0, 3.0);
@@ -90,11 +89,13 @@ fn main() {
     enum case {
         random, 
         spheres, 
-        perlin, 
+        perlin,
+        earth, 
         light,
+        cornell,
     };
 
-    let c : case = case::light;
+    let c : case = case::cornell;
     let mut background = vec3(0.3, 0.3, 0.3);
     let mut world : ShapeList;
 
@@ -108,16 +109,31 @@ fn main() {
         case::perlin => {
             world = two_perlin_spheres()
         }
+        case::earth => {
+            world = earth();
+        }
         case::light => {
             world = simple_light();
             sample_count = 1;
-            background = vec3(0.30, 0.30, 0.30);
-            lookfrom = vec3(26.0, -3.0, 6.0);
-            lookat = vec3(0.0, -2.0, 0.0);
+            background = vec3(0.0, 0.0, 0.0);
+            lookfrom = vec3(26.0, 3.0, 6.0);
+            lookat = vec3(0.0, 2.0, 0.0);
             vfov = 20.0;
+        }
+        case::cornell => {
+            world = cornell_box();
+            aspect_ratio = 1.0;
+            imgx = 300;
+            imgy = 300;
+            sample_count = 50;
+            background = vec3(0.0, 0.0, 0.0);
+            lookfrom   = vec3(278.0, 278.0, -800.0);
+            lookat     = vec3(278.0, 278.0, 0.0);
+            vfov       = 40.0;
         }
     };
 
+    let mut imgbuf = image::ImageBuffer::new(imgx as u32, imgy as u32);
     let cam = Camera::new(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 0.1);
 
     // Ray Trace!

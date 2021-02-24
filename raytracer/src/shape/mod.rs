@@ -1,7 +1,9 @@
 pub mod material;
+
 pub mod sphere;
 pub mod triangle;
 pub mod rectangle;
+pub mod prism;
 
 use crate::intersect::*;
 use ray::*;
@@ -74,6 +76,7 @@ use crate::texture::*;
 use material::*;
 use sphere::*;
 use rectangle::*;
+use prism::*;
 
 pub fn random_scene(count:i8) -> ShapeList {
     let mut world = ShapeList::new();
@@ -149,17 +152,48 @@ pub fn two_perlin_spheres() -> ShapeList {
     return world;
 }
 
+pub fn earth() -> ShapeList {
+    let mut world = ShapeList::new();
+
+    let earth_texture = Arc::new(Image::new("earthmap.jpg"));
+    let earth_surface = Arc::new(lambertian { albedo:earth_texture });
+    
+    world.push(Sphere::new(vec3(0.0, 0.0, 0.0), 2.0, earth_surface));
+
+    return world
+}
+
 pub fn simple_light() -> ShapeList {
     let mut world = ShapeList::new();
 
     let pertext = Arc::new(Noise::new(4.0));
-    world.push(Sphere::new(vec3(0.0,1000.0,0.0), 1000.0, Arc::new(lambertian { albedo:pertext.clone() })));
-    world.push(Sphere::new(vec3(0.0,-2.0,0.0), 2.0, Arc::new(lambertian { albedo:pertext.clone() })));
+    world.push(Sphere::new(vec3(0.0,-1000.0,0.0), 1000.0, Arc::new(lambertian { albedo:pertext.clone() })));
+    world.push(Sphere::new(vec3(0.0,2.0,0.0), 2.0, Arc::new(lambertian { albedo:pertext.clone() })));
 
     let difflight = Arc::new(diffuse_light::new(vec3(4.0, 4.0, 4.0)));
-    world.push(RectangleXY::new(3.0, 5.0, -3.0, -1.0, -2.0, difflight.clone()));
-    world.push(Sphere::new(vec3(0.0, -7.0, 0.0), 2.0, difflight.clone()));
+    world.push(RectangleXY::new(3.0, 5.0, 1.0, 3.0, -2.0, difflight.clone()));
+    world.push(Sphere::new(vec3(0.0, 7.0, 0.0), 2.0, difflight.clone()));
 
     return world;
+}
 
+pub fn cornell_box() -> ShapeList {
+    let mut world = ShapeList::new();
+
+    let red   = Arc::new(lambertian::new(vec3(0.65, 0.65, 0.65)));
+    let white = Arc::new(lambertian::new(vec3(0.73, 0.73, 0.73)));
+    let green = Arc::new(lambertian::new(vec3(0.12, 0.45, 0.15)));
+    let light = Arc::new(diffuse_light::new(vec3(15.0, 15.0, 15.0)));
+
+    world.push(RectangleYZ::new(0.0,   555.0, 0.0,   555.0, 555.0, green));
+    world.push(RectangleYZ::new(0.0,   555.0, 0.0,   555.0, 0.0,   red));
+    world.push(RectangleXZ::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
+    world.push(RectangleXZ::new(0.0,   555.0, 0.0,   555.0, 0.0,   white.clone()));
+    world.push(RectangleXZ::new(0.0,   555.0, 0.0,   555.0, 555.0, white.clone()));
+    world.push(RectangleXY::new(0.0,   555.0, 0.0,   555.0, 555.0, white.clone()));
+
+    world.push(Prism::new(vec3(130.0, 0.0, 65.0), vec3(295.0, 165.0, 230.0), white.clone()));
+    world.push(Prism::new(vec3(265.0, 0.0, 295.0), vec3(430.0, 330.0, 460.0), white.clone()));
+
+    return world;
 }

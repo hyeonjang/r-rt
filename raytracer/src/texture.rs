@@ -1,12 +1,19 @@
+extern crate image;
+
 use std::sync::*;
 
 use rxmath::vector::*;
 use rxmath::random::*;
 
+use image::*;
+use image::io::Reader as ImageReader;
+
 pub trait Texture {
     fn value(&self, u:f32, v:f32, p:&vec3) -> vec3;
 }
 
+/////////////////////////
+/// texture type structs
 pub struct SolidColor {
     color_value:vec3,
 }
@@ -39,8 +46,49 @@ impl Noise {
     }
 }
 
+pub struct Image {
+    img    : RgbImage,
+    width  : u32,
+    height : u32,
+}
+
+impl Image {
+    pub fn new(filename:&str) -> Self {
+        let img = ImageReader::open(filename).unwrap();
+
+        let rgb = img.decode().unwrap().into_rgb8();
+
+        Image { 
+                width:rgb.width(), 
+                height:rgb.height(), 
+                img:rgb,  
+            }
+    }
+}
+
+impl Texture for Image {
+    fn value(&self, u: f32, v: f32, p: &vec3) -> vec3 {
+        if self.img.is_empty() { return vec3(0.0, 0.0, 0.0); }
+
+        let u1 = clamp(u, 0.0, 1.0);
+        let v1 = 1.0 - clamp(v, 0.0, 1.0);
+
+        let mut i =(u1*self.width  as f32) as u32;
+        let mut j =(v1*self.height as f32) as u32;
+
+        if i>=self.width  { i=self.width -1 }
+        if j>=self.height { j=self.height-1 }
+
+        let color_scale = 1.0/255.0;
+        let pixel = self.img.get_pixel(i, j);
+
+        return vec3(pixel[0] as f32, pixel[1] as f32, pixel[2] as f32)*color_scale;
+    }
+}
+
 impl Texture for Noise {
     fn value(&self, _u: f32, _v: f32, p:&vec3) -> vec3 {
+        //return vec3(1.0, 1.0, 1.0)*self.noise.turb(*p*self.scale, None)
         return vec3(1.0,1.0,1.0)*0.5*(1.0 + f32::sin(self.scale*p.z+10.0*self.noise.turb(*p, None)));
     }
 }
@@ -58,7 +106,11 @@ impl Texture for Checker {
         else           { return self.even.value(u, v, p) }
     }
 }
+///////////////////////////////////////
+/// the end of texture type sturctures
 
+///////////////////////////////////////
+/// Perlin noise for noisy texture
 struct Perlin {
     ranvec   : Vec<vec3>,
     perm_x   : Vec<i32>,
@@ -190,3 +242,5 @@ impl Perlin {
         return f32::abs(accum);
     }
 }
+// the end of Perlin
+/////////////////////

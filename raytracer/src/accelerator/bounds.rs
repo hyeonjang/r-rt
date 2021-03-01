@@ -50,15 +50,15 @@ impl<T> std::ops::Index<usize> for Bounds3<T> {
     type Output = Gvec3<T>;
     fn index<'a>(&'a self, i:usize) -> &Gvec3<T> {
         match i {
-            _ => &&self.min,
             0 => &&self.min,
             1 => &&self.max,
+            _ => &&self.min,
         }
     }
 }
 
 impl Bounds3f {
-    pub fn intersectP(&self, ray:&Ray, inv_d:&vec3, dir_n:bvec3) -> bool {
+    pub fn intersect_p(&self, ray:&Ray, inv_d:&vec3, dir_n:bvec3) -> bool {
         let bounds = &self;
         let mut t_min = (bounds[dir_n[0] as usize].x - ray.o.x)*inv_d.x;
         let mut t_max = (bounds[1-dir_n[0] as usize].x - ray.o.x)*inv_d.x;
@@ -92,8 +92,8 @@ impl Default for Bounds3f {
 
 impl Intersect for Bounds3f {
     // intersection
-    fn intersect(&self, r:&Ray, t_min:f32, t_max:f32,h:&mut Hit) -> bool {
-        let mut t_min = 0.0; let mut t_max = r.t_max;
+    fn intersect(&self, r:&Ray, t_min:f32, t_max:f32, h:&mut Hit) -> bool {
+        let mut t_min = t_min; let mut t_max = t_max;
         for i in 0..3 {
             let inv_d = 1.0 / r.d[i];
             let mut t0 = (self.min[i] - r.o[i]) * inv_d;

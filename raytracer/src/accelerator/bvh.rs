@@ -11,9 +11,9 @@ use hit::*;
 ////////////////////////////////////////////////////
 /// 1. Interface and essential BVH information.
 pub enum Method {
-    SAH,
+    //SAH,
     EQUAL,
-    MIDDLE,
+    //MIDDLE,
 }
 
 ///////////////////////////////////////////////////////
@@ -56,45 +56,44 @@ impl BuildNode {
 struct BVHBuild {
     method : Method,
     unordered_prmitives : PrimitiveList,
-    ordered_primitives : PrimitiveList,
 }
 
 impl BVHBuild {
     fn new(primitives:&PrimitiveList, method:Method) -> Self {
-        BVHBuild{ unordered_prmitives:primitives.to_vec(), ordered_primitives:vec![], method:method }        
+        BVHBuild{ unordered_prmitives:primitives.to_vec(), method:method }        
     }
 
-    fn split_sah() -> usize {
-        return 0;
-    }
+    // fn split_sah() -> usize {
+    //     return 0;
+    // }
 
     fn split_equal_counts(primitives:&mut PrimitiveList, start:usize, end:usize, dim:usize) -> usize {
-        let selected = primitives.select_nth_unstable_by(2, |p0, p1| p0.center[dim].partial_cmp(&p1.center[dim]).unwrap() );
-        return (start+end)/2;
+        let mid = (start+end)/2;
+        primitives.select_nth_unstable_by(mid, |p0, p1| p0.center[dim].partial_cmp(&p1.center[dim]).unwrap() );
+        return mid;
     }
 
     fn build(&mut self, start:usize, end:usize) -> Box<BuildNode> {
         let mut n:Box<BuildNode> = Box::new(BuildNode::default());
 
-        let b_prim = &mut n.bound;
-        let b_cent = &mut n.center;
+        let bnd_prim = &mut n.bound;
+        let bnd_cent = &mut n.center;
         for i in start..end {
-            b_prim.expand(self.unordered_prmitives[i].bound);
-            b_cent.expand(self.unordered_prmitives[i].center);
+            bnd_prim.expand(self.unordered_prmitives[i].bound);
+            bnd_cent.expand(self.unordered_prmitives[i].center);
         }
 
-        let dim = b_cent.max_extend() as usize;
-        let nprim = end - start;
+        let dim = bnd_cent.max_extend() as usize;
+        let nprim = end-start;
 
-        if nprim==1 || b_cent.max[dim]==b_cent.min[dim] {
-            self.ordered_primitives.push(self.unordered_prmitives[start].clone());
+        if nprim==1 || bnd_cent.max[dim]==bnd_cent.min[dim] {
             return Box::new(n.init_leaf(self.unordered_prmitives[start].id, n.bound));
         }
 
         let mid = match self.method {
-            Method::SAH => BVHBuild::split_sah(),
+            //Method::SAH => BVHBuild::split_sah(),
             Method::EQUAL => BVHBuild::split_equal_counts(&mut self.unordered_prmitives, start, end, dim),
-            Method::MIDDLE => BVHBuild::split_sah(),
+            //Method::MIDDLE => BVHBuild::split_sah(),
         };
 
         n.init_interior(dim, self.build(start, mid), self.build(mid, end));
@@ -123,36 +122,30 @@ impl Node {
 }
 
 pub struct BVH {
-    pub nodes:Vec<Node>,
-    pub mesh:*mut ShapeList,
+    nodes:Vec<Node>,
+    mesh:*mut ShapeList,
 }
 
 impl BVH {
     pub fn new(mesh:*mut ShapeList) -> Self {
         BVH { nodes:vec![], mesh:mesh }
     }
-    pub fn len(&self) -> usize {
-        self.nodes.len()
+    pub fn alloc_node(&mut self) {
+        self.nodes.push(Node::new());
     }
-    pub fn resize(&mut self, len:usize) {
-        self.nodes.clear(); self.nodes.resize(len, Node::new());
-    }
-    pub fn capacity(&self) -> usize {
-        self.nodes.capacity()
-    }
-    #[allow(private_in_public)]
-    pub fn flatten_tree(&mut self, node:Option<&Box<BuildNode>>, offset:&mut isize) -> isize {
+    fn flatten_tree(&mut self, node:Option<&Box<BuildNode>>, offset:&mut isize) -> isize {
         let node = match node {
-            Some(s) => node.unwrap(),
-            None => return 0, //@@todo primitivie id
+            Some(_) => node.unwrap(),
+            None => return 0,
         };
 
         *offset = *offset+1;
         let offset0 = *offset;
 
+        self.alloc_node();
         self.nodes[*offset as usize].second = node.id as isize;
-        self.nodes[*offset as usize].bound = node.bound;
-        self.nodes[*offset as usize].axis = node.axis as u32;
+        self.nodes[*offset as usize].bound  = node.bound;
+        self.nodes[*offset as usize].axis   = node.axis as u32;
         
         if !node.is_leaf() {
             self.flatten_tree(node.l.as_ref(), offset);
@@ -169,55 +162,52 @@ impl Accelerator for BVH {
      
         for i in 0..primitives.capacity() {
             primitives.push(Primitive{ id:i as i32, bound:primitive[i].bounds(), center:primitive[i].bounds().center() });
+            println!("{} {}", primitives[i].center, primitives[i].bound);
         }
 
         let mut bvh_build = BVHBuild::new(&primitives, Method::EQUAL);
 
         let len = primitives.len();
         let root = bvh_build.build(0, len);
-
-        self.resize(5); //@@todo
+        
         BVH::flatten_tree(self, Some(&root), &mut -1);
+
+        println!("\nCheck data");
+        for n in &self.nodes {
+            println!("{}", n.bound);
+            println!("axis:{} second:{}", n.axis, n.second);
+        }
+
     }
 }
 
-////////////////////////////////////////////
 impl Intersect for BVH {
     fn intersect(&self, r:&Ray, t_min:f32, t_max:f32, h:&mut Hit) -> bool {
         if self.nodes.is_empty() { return false; }
         let mut hit = false;
-        let mut idx = 0;
-        let mut to = 0;
         let inv_d = vec3(1.0/r.d.x, 1.0/r.d.y, 1.0/r.d.z);
         let d_neg = vec3(inv_d.x<0.0, inv_d.y<0.0, inv_d.z<0.0); 
+        let mut to = 1;
         let mut stack = [0;64];
-        'intersect : loop {
+        while to != 0 {
+            to -= 1;
+            let idx = stack[to];
             let node = &self.nodes[idx];
-            if node.bound.intersect(r, t_min, t_max, h) {
-                if node.is_leaf() {
-                    unsafe {
-                        if (*self.mesh).list[node.second as usize].intersect(r,t_min, t_max, h) { hit = true; }
-                    }
-                    if to==0 { break 'intersect; }
-                    to -= 1;
-                    idx = stack[to] as usize;
-                } else {
-                    if d_neg[node.axis as usize] {
-                        to += 1;
-                        stack[to] = idx + 1;
-                        idx = node.second as usize;
-                    } else {
-                        to += 1;
-                        stack[to] = node.second as usize;
-                        idx = idx + 1;
-                    }
+            if !node.is_leaf() {
+                if node.bound.intersect(r, t_min, t_max, h) {
+                    stack[to + d_neg[node.axis as usize] as usize] = idx+1;
+                    stack[to + !d_neg[node.axis as usize] as usize] = node.second as usize;
+                    to += 2;
                 }
-            } else {
-                if to==0 { break 'intersect; }
-                to -= 1;
-                idx = stack[to] as usize;
+                continue;
             }
-            if to==0 { break 'intersect; }
+            unsafe {
+                let mut i = Hit::default();
+                if (*self.mesh).list[node.second as usize].intersect(r, t_min, t_max, &mut i) && i.t_min<h.t_min {
+                    *h = i;
+                    hit=true;
+                }
+            }
         }
         return hit;
     }
@@ -230,17 +220,7 @@ pub fn Create(mesh:*mut ShapeList, primitives:&Vec<Box<dyn Shape>>) -> Box<BVH> 
     return Box::new(bvh);
 }
 
-
 #[cfg(test)]
 mod tests { 
 
-// use crate::bvh::*;
-
-//     #[test]
-//     fn it_works() {
-//         println!("[raytracer-bvh] testing module");
-
-//         let one_node = Node::new();
-//         assert_eq!(32, std::mem::size_of_val(&one_node));
-//     }
 }

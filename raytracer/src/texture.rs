@@ -118,6 +118,7 @@ struct Perlin {
     perm_z   : Vec<i32>,
 }
 
+#[allow(dead_code)]
 impl Perlin {
     fn point_count() -> usize {
         256
@@ -230,7 +231,7 @@ impl Perlin {
         let mut weight = 1.0;
 
         let idx = match depth {
-            Some(d) => depth.unwrap(),
+            Some(_) => depth.unwrap(),
             None => 7,
         };
 

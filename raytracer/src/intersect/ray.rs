@@ -14,7 +14,7 @@ impl Ray {
     } 
     pub fn new(o:vec3, d:vec3, t:Option<f32>) -> Ray {
         match t {
-            Some(p) =>  Ray{ o:o, d:d, t_max:f32::MAX, tm:t.unwrap() },
+            Some(_) =>  Ray{ o:o, d:d, t_max:f32::MAX, tm:t.unwrap() },
             None => Ray{ o:o, d:d, t_max:f32::MAX, tm:0.0 },
         }
     }

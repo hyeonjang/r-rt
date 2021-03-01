@@ -12,7 +12,7 @@ use crate::texture::*;
 /// material
 #[allow(non_camel_case_types)]
 pub trait Material {
-    fn emitted(&self, u:f32, v:f32, p:&vec3) -> vec3 { return vec3(0.0, 0.0, 0.0); } 
+    fn emitted(&self, _u:f32, _v:f32, _p:&vec3) -> vec3 { return vec3(0.0, 0.0, 0.0); } 
     fn scatter(&self, r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray) -> bool;
 }
 

@@ -29,6 +29,7 @@ use hit::*;
 use ray::*;
 use self::shape::*;
 use self::camera::*;
+use self::accelerator::*;
 
 // static variables
 static NAME:&'static str = "ray-tracer";
@@ -80,12 +81,14 @@ fn main() {
     // Camera
     let mut lookfrom = vec3(13.0, -2.0, 3.0);
     let mut lookat = vec3(0.0, 0.0, 0.0);
-    let mut vup = vec3(0.0, 1.0, 0.0);
+    let vup = vec3(0.0, 1.0, 0.0);
     let mut vfov = 40.0;
-    let mut dist_to_focus = 10.0;
-    let mut aperture = 0.1;
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
 
     // World
+    #[allow(non_camel_case_types)]
+    #[allow(dead_code)]
     enum case {
         random, 
         spheres, 
@@ -95,7 +98,7 @@ fn main() {
         cornell,
     };
 
-    let c : case = case::cornell;
+    let c : case = case::random;
     let mut background = vec3(0.3, 0.3, 0.3);
     let mut world : ShapeList;
 
@@ -135,6 +138,8 @@ fn main() {
 
     let mut imgbuf = image::ImageBuffer::new(imgx as u32, imgy as u32);
     let cam = Camera::new(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 0.1);
+
+    world.acc_build(AcceleratorType::BVH);
 
     // Ray Trace!
     let start = Instant::now();

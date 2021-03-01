@@ -44,7 +44,7 @@ impl ShapeList {
 impl Intersect for ShapeList {
     fn intersect(&self, r:&Ray, t_min:f32, t_max:f32, h:&mut Hit) -> bool {
         match &self.acc {
-            Some(s) => { self.acc.as_ref().unwrap().intersect(r, t_min, t_max, h) },
+            Some(_) => { self.acc.as_ref().unwrap().intersect(r, t_min, t_max, h) },
             None => {
                 let mut i = Hit::default();
                 let mut hit = false;
@@ -89,11 +89,11 @@ pub fn random_scene(count:i8) -> ShapeList {
     world.push(Sphere{center:vec3(0f32, 1000f32, 0f32), radius:1000.0f32, mat_ptr:Arc::new(lambertian{ albedo:checker })});
     //let ground_material = Arc::new(lambertian::new(vec3(0.5, 0.5, 0.5)));
 
-    let material1 = Arc::new(dielectric::new(1.5));
-    world.push(Sphere::new(vec3(0.0, -1.0, 0.0), 1.0, material1));
-
     let material2 = Arc::new(lambertian::new(vec3(0.4, 0.2, 0.1)));
     world.push(Sphere::new(vec3(-4.0, -1.0, 0.1), 1.0, material2));
+
+    let material1 = Arc::new(dielectric::new(1.5));
+    world.push(Sphere::new(vec3(0.0, -1.0, 0.0), 1.0, material1));
 
     let material3 = Arc::new(metal::new(vec3(0.7, 0.6, 0.5), 0.0));
     world.push(Sphere::new(vec3( 4.0, -1.0, 0.0), 1.0, material3));
@@ -192,7 +192,7 @@ pub fn cornell_box() -> ShapeList {
     world.push(RectangleXZ::new(0.0,   555.0, 0.0,   555.0, 555.0, white.clone()));
     world.push(RectangleXY::new(0.0,   555.0, 0.0,   555.0, 555.0, white.clone()));
 
-    world.push(Prism::new(vec3(130.0, 0.0, 65.0), vec3(295.0, 165.0, 230.0), white.clone()));
+    world.push(Prism::new(vec3(130.0, 0.0, 65.0),  vec3(295.0, 165.0, 230.0), white.clone()));
     world.push(Prism::new(vec3(265.0, 0.0, 295.0), vec3(430.0, 330.0, 460.0), white.clone()));
 
     return world;

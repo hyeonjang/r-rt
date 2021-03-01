@@ -34,7 +34,7 @@ impl Prism {
 
 impl Shape for Prism {
     fn bounds(&self) -> Bounds3f {
-        Bounds3f::default()
+        Bounds3f{ min:self.min, max:self.max }
     }
 }
 

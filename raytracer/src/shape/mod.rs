@@ -4,6 +4,7 @@ pub mod sphere;
 pub mod triangle;
 pub mod rectangle;
 pub mod prism;
+pub mod volume;
 
 use crate::intersect::*;
 use ray::*;
@@ -77,6 +78,7 @@ use material::*;
 use sphere::*;
 use rectangle::*;
 use prism::*;
+use volume::*;
 
 pub fn random_scene(count:i8) -> ShapeList {
     let mut world = ShapeList::new();
@@ -96,7 +98,7 @@ pub fn random_scene(count:i8) -> ShapeList {
     world.push(Sphere::new(vec3(0.0, -1.0, 0.0), 1.0, material1));
 
     let material3 = Arc::new(metal::new(vec3(0.7, 0.6, 0.5), 0.0));
-    world.push(Sphere::new(vec3( 4.0, -1.0, 0.0), 1.0, material3));
+    world.push(Sphere::new(vec3( 4.0, -1.0, 1.0), 1.0, material3));
 
     for a in -count..count {
         for b in -count..count {
@@ -168,11 +170,11 @@ pub fn simple_light() -> ShapeList {
 
     let pertext = Arc::new(Noise::new(4.0));
     world.push(Sphere::new(vec3(0.0,-1000.0,0.0), 1000.0, Arc::new(lambertian { albedo:pertext.clone() })));
-    world.push(Sphere::new(vec3(0.0,2.0,0.0), 2.0, Arc::new(lambertian { albedo:pertext.clone() })));
+    world.push(Sphere::new(vec3(0.0, 2.0, 0.0), 2.0, Arc::new(lambertian { albedo:pertext.clone() })));
 
     let difflight = Arc::new(diffuse_light::new(vec3(4.0, 4.0, 4.0)));
     world.push(RectangleXY::new(3.0, 5.0, 1.0, 3.0, -2.0, difflight.clone()));
-    world.push(Sphere::new(vec3(0.0, 7.0, 0.0), 2.0, difflight.clone()));
+    world.push(Sphere::new(vec3(1.0, 7.0, 1.0), 2.0, difflight.clone()));
 
     return world;
 }
@@ -195,5 +197,29 @@ pub fn cornell_box() -> ShapeList {
     world.push(Prism::new(vec3(130.0, 0.0, 65.0),  vec3(295.0, 165.0, 230.0), white.clone()));
     world.push(Prism::new(vec3(265.0, 0.0, 295.0), vec3(430.0, 330.0, 460.0), white.clone()));
 
+    return world;
+}
+
+pub fn cornell_smoke() -> ShapeList {
+    let mut world = ShapeList::new();
+
+    let red   = Arc::new(lambertian::new(vec3(0.65, 0.65, 0.65)));
+    let white = Arc::new(lambertian::new(vec3(0.73, 0.73, 0.73)));
+    let green = Arc::new(lambertian::new(vec3(0.12, 0.45, 0.15)));
+    let light = Arc::new(diffuse_light::new(vec3(7.0, 7.0, 7.0)));
+
+    world.push(RectangleYZ::new(0.0,   555.0, 0.0,   555.0, 555.0, green));
+    world.push(RectangleYZ::new(0.0,   555.0, 0.0,   555.0, 0.0,   red));
+    world.push(RectangleXZ::new(113.0, 443.0, 127.0, 432.0, 554.0, light));
+    world.push(RectangleXZ::new(0.0,   555.0, 0.0,   555.0, 0.0,   white.clone()));
+    world.push(RectangleXZ::new(0.0,   555.0, 0.0,   555.0, 555.0, white.clone()));
+    world.push(RectangleXY::new(0.0,   555.0, 0.0,   555.0, 555.0, white.clone()));
+
+    let box1 = Prism::new(vec3(130.0, 0.0, 65.0),  vec3(295.0, 165.0, 230.0), white.clone());
+    world.push(ConstantMedium::new(Arc::new(box1), 0.001, vec3(0.0, 0.0, 0.0)));
+   
+    let box2 = Prism::new(vec3(265.0, 0.0, 295.0), vec3(430.0, 330.0, 460.0), white.clone());
+    world.push(ConstantMedium::new(Arc::new(box2), 0.001, vec3(1.0, 1.0, 1.0)));
+     
     return world;
 }

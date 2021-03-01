@@ -53,19 +53,19 @@ impl RectangleXZ {
 
 impl Shape for RectangleXY {
     fn bounds(&self) -> Bounds3f {
-        Bounds3f::default()
+        Bounds3f { min:vec3(self.x0, self.y0, self.k-0.0001), max:vec3(self.x1, self.y1, self.k+0.0001)}
     }
 }
 
 impl Shape for RectangleYZ {
     fn bounds(&self) -> Bounds3f {
-        Bounds3f::default()
+        Bounds3f { min:vec3(self.k-0.0001, self.y0, self.z0), max:vec3(self.k+0.0001, self.y1, self.z1)}
     }
 }
 
 impl Shape for RectangleXZ {
     fn bounds(&self) -> Bounds3f {
-        Bounds3f::default()
+        Bounds3f { min:vec3(self.x0, self.k-0.0001, self.z0), max:vec3(self.x1, self.k+0.0001, self.z1)}
     }
 }
 

@@ -37,6 +37,11 @@ pub struct diffuse_light {
     emit:Arc<dyn Texture>,
 }
 
+#[allow(non_camel_case_types)]
+pub struct isotropic {
+    albedo:Arc<dyn Texture>,
+}
+
 impl lambertian {
     pub fn new(v:vec3) -> lambertian {
         lambertian { albedo:Arc::new(SolidColor::new(v)) }
@@ -63,6 +68,12 @@ impl dielectric {
 impl diffuse_light {
     pub fn new(c:vec3) -> diffuse_light {
         diffuse_light { emit:Arc::new(SolidColor::new(c)), }
+    }
+}
+
+impl isotropic {
+    pub fn new(c:vec3) -> Self {
+        isotropic { albedo:Arc::new(SolidColor::new(c)) }
     }
 }
 
@@ -122,3 +133,10 @@ impl Material for diffuse_light {
     }
 }
 
+impl Material for isotropic {
+    fn scatter(&self, r: &Ray, h: &Hit, attenuation: &mut vec3, scattered: &mut Ray) -> bool {
+        *scattered = Ray::new(h.pos, random_unit_sphere(), Some(r.tm));
+        *attenuation = self.albedo.value(h.u, h.v, &h.pos);
+        return true;
+    }
+}

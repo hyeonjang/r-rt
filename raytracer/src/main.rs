@@ -96,9 +96,10 @@ fn main() {
         earth, 
         light,
         cornell,
+        smoke
     };
 
-    let c : case = case::random;
+    let c : case = case::cornell;
     let mut background = vec3(0.3, 0.3, 0.3);
     let mut world : ShapeList;
 
@@ -128,7 +129,18 @@ fn main() {
             aspect_ratio = 1.0;
             imgx = 300;
             imgy = 300;
-            sample_count = 50;
+            sample_count = 100;
+            background = vec3(0.0, 0.0, 0.0);
+            lookfrom   = vec3(278.0, 278.0, -800.0);
+            lookat     = vec3(278.0, 278.0, 0.0);
+            vfov       = 40.0;
+        }
+        case::smoke => {
+            world = cornell_smoke();
+            aspect_ratio = 1.0;
+            imgx = 300;
+            imgy = 300;
+            sample_count = 100;
             background = vec3(0.0, 0.0, 0.0);
             lookfrom   = vec3(278.0, 278.0, -800.0);
             lookat     = vec3(278.0, 278.0, 0.0);
@@ -140,7 +152,7 @@ fn main() {
     let cam = Camera::new(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 0.1);
 
     world.acc_build(AcceleratorType::BVH);
-
+    
     // Ray Trace!
     let start = Instant::now();
     let pb = ProgressBar::new(((imgx*imgy) as u64)*sample_count);

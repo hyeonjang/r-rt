@@ -86,7 +86,7 @@ impl BVHBuild {
         let dim = bnd_cent.max_extend() as usize;
         let nprim = end-start;
 
-        if nprim==1 || bnd_cent.max[dim]==bnd_cent.min[dim] {
+        if nprim<=1 || bnd_cent.max[dim]==bnd_cent.min[dim] {
             return Box::new(n.init_leaf(self.unordered_prmitives[start].id, n.bound));
         }
 
@@ -162,8 +162,10 @@ impl Accelerator for BVH {
      
         for i in 0..primitives.capacity() {
             primitives.push(Primitive{ id:i as i32, bound:primitive[i].bounds(), center:primitive[i].bounds().center() });
-            println!("{} {}", primitives[i].center, primitives[i].bound);
+            println!("[{}]\n{}", primitives[i].bound, primitives[i].center);
         }
+
+        println!();
 
         let mut bvh_build = BVHBuild::new(&primitives, Method::EQUAL);
 
@@ -174,7 +176,7 @@ impl Accelerator for BVH {
 
         println!("\nCheck data");
         for n in &self.nodes {
-            println!("{}", n.bound);
+            println!("[{}]", n.bound);
             println!("axis:{} second:{}", n.axis, n.second);
         }
 

@@ -13,7 +13,8 @@ use crate::texture::*;
 #[allow(non_camel_case_types)]
 pub trait Material {
     fn emitted(&self, _u:f32, _v:f32, _p:&vec3) -> vec3 { return vec3(0.0, 0.0, 0.0); } 
-    fn scatter(&self, r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray) -> bool;
+    fn scatter(&self, r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray, pdf:&mut f32) -> bool;
+    fn scatter_pdf(&self, r:&Ray, h:&Hit, scattered:&mut Ray) -> f32 { return 0.0; }
 }
 
 #[allow(non_camel_case_types)]
@@ -78,7 +79,7 @@ impl isotropic {
 }
 
 impl Material for lambertian {
-    fn scatter(&self, _r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray) -> bool{
+    fn scatter(&self, _r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray, pdf:&mut f32) -> bool{
         let mut scatter_dection = h.norm + random_unit_vector();
 
         if scatter_dection.near_zero() {
@@ -87,12 +88,18 @@ impl Material for lambertian {
 
         *scattered = Ray::new(h.pos, scatter_dection, None);
         *attenuation = self.albedo.value(h.u, h.v, &h.pos);
+        *pdf = dot(h.norm, scattered.d)/3.14; 
         return true;
     }
+    fn scatter_pdf(&self, r: &Ray, h: &Hit, scattered: &mut Ray) -> f32 {
+        let cosine = dot(h.norm, scattered.d.normalize());
+        if cosine<0.0 { 0.0 } else { cosine/3.14 }
+    }
+
 }
 
 impl Material for metal {
-    fn scatter(&self, r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray) -> bool {
+    fn scatter(&self, r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray, pdf:&mut f32) -> bool {
         let reflected = reflect(r.d.normalize(), h.norm);
         *scattered = Ray::new(h.pos, reflected + random_unit_sphere()*self.fuzz, None);
         *attenuation = self.albedo;
@@ -101,7 +108,7 @@ impl Material for metal {
 }
 
 impl Material for dielectric {
-    fn scatter(&self, r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray) -> bool {
+    fn scatter(&self, r:&Ray, h:&Hit, attenuation:&mut vec3, scattered:&mut Ray, pdf:&mut f32) -> bool {
         *attenuation = vec3(1.0, 1.0, 1.0);
         let refraction_ratio = { if h.front { 1.0/self.ir } else { self.ir } };
 
@@ -128,13 +135,13 @@ impl Material for diffuse_light {
     fn emitted(&self, u:f32, v:f32, p:&vec3) -> vec3 {
         return self.emit.value(u, v, p);
     } 
-    fn scatter(&self, _r: &Ray, _h: &Hit, _attenuation: &mut vec3, _scattered: &mut Ray) -> bool {
+    fn scatter(&self, _r: &Ray, _h: &Hit, _attenuation: &mut vec3, _scattered: &mut Ray, pdf:&mut f32) -> bool {
         return false;
     }
 }
 
 impl Material for isotropic {
-    fn scatter(&self, r: &Ray, h: &Hit, attenuation: &mut vec3, scattered: &mut Ray) -> bool {
+    fn scatter(&self, r: &Ray, h: &Hit, attenuation: &mut vec3, scattered: &mut Ray, pdf:&mut f32) -> bool {
         *scattered = Ray::new(h.pos, random_unit_sphere(), Some(r.tm));
         *attenuation = self.albedo.value(h.u, h.v, &h.pos);
         return true;

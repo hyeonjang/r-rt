@@ -50,12 +50,14 @@ pub fn ray_color(r:&Ray, background:&vec3, objects:&ShapeList, depth:u32) -> vec
     let mut scattered:Ray = Ray::default();
     let mut attenuation = vec3(0f32, 0f32, 0f32);
     let emitted = i.mat_ptr.emitted(i.u, i.v, &i.pos);
+    let mut pdf = f32::default();
 
-    if !i.mat_ptr.scatter(&r, &i, &mut attenuation, &mut scattered) {
+    if !i.mat_ptr.scatter(&r, &i, &mut attenuation, &mut scattered, &mut pdf) {
         return emitted;
     }
 
-    return emitted + attenuation * ray_color(&mut scattered, background, objects, depth-1);
+    return emitted + attenuation * i.mat_ptr.scatter_pdf(r, &i, &mut scattered)*
+        ray_color(&mut scattered, background, objects, depth-1)/pdf;
 }
 
 pub fn write_color(pixel_color:vec3, sample_count:u64) -> vec3 {
@@ -99,13 +101,14 @@ fn main() {
         smoke
     };
 
-    let c : case = case::cornell;
+    let c : case = case::light;
     let mut background = vec3(0.3, 0.3, 0.3);
     let mut world : ShapeList;
 
     match c {
         case::random => {
             world = random_scene(0);
+            sample_count = 1;
         },
         case::spheres => {
             world = two_spheres();

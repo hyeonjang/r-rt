@@ -4,18 +4,21 @@ mod tests {
     use rxmath::random::*;
     use image::*;
 
-    fn pdf(x:f64) -> f64 {
-        return 0.5*x;
+    use crate::sample::*;
+
+    fn pdf(x:vec3) -> f32 {
+        return 1.0/(4.0*3.14);
     }
 
     fn integrate_squared_x() {
         let N = 1000000;
         let mut sum = 0.0;
         for _ in 0..N {
-            let x = (random_range_f64(0.0, 4.0)).sqrt();
-            sum += x*x / pdf(x);
+            let d = random_unit_sphere();
+            let cos_squared = d.z*d.z;
+            sum += cos_squared / pdf(d);
         }
-        println!("I = {}", sum/N as f64);
+        println!("I = {}", sum/N as f32);
     }
 
     fn simple_mc() {

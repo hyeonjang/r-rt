@@ -25,7 +25,7 @@ impl Camera {
 
         let w = normalize(lookfrom-lookat);
         let u = normalize(cross(w, vup));
-        let v = cross(u, w);
+        let v = cross(w, u);
 
         let origin = lookfrom;
         let horizontal = u*viewport_width*focus_dist;//u*viewport_width;
